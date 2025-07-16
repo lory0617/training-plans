@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🏋️‍♂️重訓課表</title>
+  <style>
+    :root {
+      --color1: #57A0D5;
+      --color2: #00BBE0;
+      --color3: #00D2D3;
+      --color4: #4CE6B3;
+      --color5: #A5F38D;
+      --color6: #F9F871;
+      --text-dark: #1f1f1f;
+    }
+
+    body {
+      font-family: "Helvetica Neue", sans-serif;
+      line-height: 1.8;
+      margin: 0;
+      padding: 2rem;
+      background: linear-gradient(135deg, var(--color1), var(--color4));
+      color: var(--text-dark);
+      font-size: 1.2rem;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 1rem;
+      font-size: 3.2rem;
+      color: #333333;
+      letter-spacing: 1px;
+    }
+    .subtitle {
+      text-align: center;
+      font-size: 1.5rem;
+      margin-bottom: 2.5rem;
+      color: var(--color6);
+      font-weight: bold;
+    }
+    section {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2.5rem;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 2rem;
+      border-left: 10px solid var(--color3);
+    }
+    section:hover {
+      transform: scale(1.01);
+    }
+    h2 {
+      color: var(--color2);
+      border-bottom: 3px solid var(--color6);
+      padding-bottom: 0.5rem;
+      margin-top: 0;
+      width: 100%;
+      font-size: 2rem;
+    }
+    ul {
+      list-style-type: disc;
+      padding-left: 1.5rem;
+      margin: 0;
+    }
+    li {
+      margin-bottom: 0.75rem;
+    }
+    .exercise-img {
+      max-width: 360px;
+      width: 100%;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      flex-shrink: 0;
+      border: 4px solid #00BBE0;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .exercise-img:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+    .content {
+      flex: 1;
+    }
+    @media (max-width: 768px) {
+      section {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>🏋️‍♂️ 重訓課表</h1>
+  <div class="subtitle">每次訓練，選四項動作來做</div>
+  <div id="trainingPlan"></div>
+
+  <script>
+    const students = {
+      lijia: {
+        chest: [
+          "史密斯上胸 10kg（單邊）或 機械上胸 10kg（槓片單邊）",
+          "槓拎臥推 10kg（單邊）或 機械臥推 15kg（槓片單邊）",
+          "機械雙槓下胸 15kg（槓片單邊）",
+          "機械夾胸 30kg 或 龍門架繩索夾胸 5kg（單邊）",
+          "纜繩前三角 10kg"
+        ],
+        back: [
+          "引體向上 補41kg",
+          "機械闊背下拉 20kg（槓片單邊)",
+          "機械握把划船 10kg（槓片單邊）或 地雷管寬握划船 15kg",
+          "直臂下拉 20kg",
+          "滑輪下拉 35kg"
+        ],
+        shoulder: [
+          "機械寬握肩推 30kg",
+          "機械窄握肩推 30kg",
+          "啞鈴肩飛鳥 5kg（單邊）",
+          "啞鈴後三角 10kg 或 cable後三角 4.5kg（單邊）",
+          "纜繩三頭下壓 18kg"
+        ],
+        leg: [
+          "哈克蹲 20kg 或 史密斯寬距深蹲 12.5kg （單邊）",
+          "機械腿推 25kg（單邊）",
+          "機械前腿 2.5kg（單邊）",
+          "機械腿外展 40kg 或 - 機械腿後勾 2.5kg"
+        ]
+      },
+      zongxiang: {
+        chest: [
+          "史密斯上胸 10kg（單邊）或 機械上胸 10kg（槓片單邊）",
+          "槓拎臥推 10kg（單邊）或 機械臥推 15kg（槓片單邊）",
+          "機械雙槓下胸 15kg（槓片單邊）",
+          "機械夾胸 30kg 或 龍門架繩索夾胸 5kg（單邊）",
+          "纜繩前三角 10kg"
+        ],
+        back: [
+          "機械划船 20kg(單邊）",
+          "地雷管划船 15kg",
+          "機械闊背下拉 25kg(單邊）",
+          "cable 闊背下拉 32kg"
+        ],
+        shoulder: [
+          "機械寬握肩推 30kg",
+          "機械窄握肩推 30kg",
+          "啞鈴肩飛鳥 5kg（單邊）",
+          "啞鈴後三角 10kg 或 cable後三角 4.5kg（單邊）",
+          "纜繩三頭下壓 18kg"
+        ],
+        leg: [
+          "哈克蹲 20kg 或 史密斯寬距深蹲 12.5kg （單邊）",
+          "機械腿推 25kg（單邊）",
+          "機械前腿 2.5kg（單邊）",
+          "機械腿外展 40kg 或 - 機械腿後勾 2.5kg"
+        ]
+      }
+    };
+
+    const images = {
+      chest: 'images/chest.png',
+      back: 'images/back.png',
+      shoulder: 'images/shoulder.png',
+      leg: 'images/leg.png'
+    };
+
+    function getQueryParam(param) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param);
+    }
+
+    function renderPlan(studentKey) {
+      const student = students[studentKey] || students.lijia;
+      const container = document.getElementById("trainingPlan");
+      container.innerHTML = Object.entries(student).map(([part, list]) => `
+        <section>
+          <h2>${part.toUpperCase()}</h2>
+          <img class="exercise-img" src="${images[part]}" alt="${part} 示意圖">
+          <div class="content">
+            <ul>
+              ${list.map(item => `<li>${item}</li>`).join('')}
+            </ul>
+          </div>
+        </section>
+      `).join('');
+    }
+
+    const student = getQueryParam("student") || "lijia";
+    renderPlan(student);
+  </script>
+</body>
+</html>
