@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>選擇學生</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --color1: #57A0D5;
+      --color2: #00BBE0;
+      --color3: #00D2D3;
+      --color4: #4CE6B3;
+      --color5: #A5F38D;
+      --color6: #F9F871;
+      --text-dark: #1f1f1f;
+    }
+
+    body {
+      font-family: "Helvetica Neue", sans-serif;
+      margin: 0;
+      padding: 2rem;
+      background: linear-gradient(135deg, var(--color1), var(--color4));
+      color: var(--text-dark);
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 3rem;
+      color: #333333;
+      margin-bottom: 1rem;
+    }
+
+    .selector-wrapper {
+      background: white;
+      padding: 2rem;
+      border-radius: 16px;
+      display: inline-block;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.1);
+    }
+
+    select, button {
+      font-size: 1.2rem;
+      padding: 0.6rem 1rem;
+      margin-top: 1rem;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      transition: background-color 0.3s, transform 0.2s;
+    }
+
+    select {
+      background-color: var(--color3);
+      color: white;
+    }
+
+    button {
+      background-color: var(--color2);
+      color: white;
+      margin-left: 1rem;
+      cursor: pointer;
+    }
+
+    button:hover, select:hover {
+      transform: scale(1.05);
+      background-color: var(--color5);
+    }
+
+    @media (max-width: 600px) {
+      select, button {
+        display: block;
+        margin: 1rem auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>🏋️‍♂️ 請選擇學生</h1>
+  <div class="selector-wrapper">
+    <select id="studentSelect">
+      <option value="lijia">禮嘉</option>
+      <option value="zongxiang">宗翔</option>
+    </select>
+    <button onclick="goToPlan()">確認</button>
+  </div>
+
+  <script>
+    function goToPlan() {
+      const student = document.getElementById("studentSelect").value;
+      window.location.href = `plan.html?student=${student}`;
+    }
+  </script>
+</body>
+</html>
