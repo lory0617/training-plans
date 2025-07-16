@@ -27,7 +27,7 @@
     h1 {
       font-size: 3rem;
       color: #333333;
-      margin-bottom: 1rem;
+      margin-bottom: 2rem;
     }
 
     .selector-wrapper {
@@ -84,6 +84,7 @@
 </head>
 <body>
   <h1> 🦾 你是哪位學員呢？</h1>
+
   <div class="selector-wrapper">
     <select id="studentSelect">
       <option value="lijia">禮嘉</option>
@@ -92,7 +93,9 @@
     <button onclick="goToPlan()">確認</button>
   </div>
 
-  <img src="images/fitness_pair.png" alt="健身示意圖" class="illustration">
+  <div>
+    <img src="images/fitness_pair.png" alt="健身示意圖" class="illustration">
+  </div>
 
   <script>
     function goToPlan() {
