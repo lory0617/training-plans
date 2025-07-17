@@ -84,13 +84,21 @@
     .select-wrapper {
       display: flex;
       justify-content: center;
-      margin-bottom: 2rem;
+      margin: 1rem auto 2rem auto;
+      width: 100%;
+    }
+
+    .select-wrapper select {
+      width: 200px;
+      max-width: 80%;
+      text-align: center;
+      font-size: 1.2rem;
     }
 
     footer {
-      margin-top: 1.5rem;
       font-size: 0.9rem;
-      color: #33333;
+      color: #ffffffcc;
+      margin-top: 2rem;
     }
 
     @media (max-width: 600px) {
@@ -111,7 +119,7 @@
   </style>
 </head>
 <body>
-  <h1>💪 訓練課表</h1>
+  <h1> 🎯 訓練課表 🏋🏻 </h1>
   <div class="select-wrapper">
   <select id="muscleGroup" onchange="renderTags()">
     <option value="chest">胸</option>
