@@ -203,6 +203,29 @@
 
     const student = getQueryParam("student") || "lijia";
     renderPlan(student);
+    
   </script>
+    <div style="margin-top: 2rem;">
+    <a href="index.html" style="
+      display: inline-block;
+      padding: 0.8rem 1.5rem;
+      background-color: #00BBE0;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-size: 1.2rem;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      transition: transform 0.2s ease, background-color 0.3s ease;
+    "
+    onmouseover="this.style.backgroundColor='#00D2D3';this.style.transform='scale(1.05)'"
+    onmouseout="this.style.backgroundColor='#00BBE0';this.style.transform='scale(1)'">
+      🔙 回到首頁
+    </a>
+  </div>
+
+  <footer style="margin-top: 2rem; font-size: 0.9rem; color: #ffffffcc;">
+    © 2025 Lory Fitness. All rights reserved.
+  </footer>
+
 </body>
 </html>
