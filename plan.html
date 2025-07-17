@@ -155,26 +155,27 @@
   }
 
   function renderTags() {
-    const group = document.getElementById('muscleGroup').value;
-    const container = document.getElementById('tagsContainer');
-    const image = document.getElementById('muscleImage');
-    container.innerHTML = '';
+  const group = document.getElementById('muscleGroup').value;
+  const container = document.getElementById('tagsContainer');
+  const image = document.getElementById('muscleImage');
+  container.innerHTML = '';
 
-    if (!plans[student] || !plans[student][group]) {
-      container.innerHTML = "<p>尚無資料</p>";
-      image.src = '';
-      return;
-    }
-
-    // 訓練圖片
-    image.src = `images/${group}.png`;
-    plans[student][group].forEach(e => {
-      const tag = document.createElement('div');
-      tag.className = 'tag';
-      tag.textContent = e;
-      container.appendChild(tag);
-    });
+  if (!plans[student] || !plans[student][group]) {
+    container.innerHTML = "<p>尚無資料</p>";
+    image.src = '';
+    return;
   }
+
+  const gender = plans[student]?.gender || 'male'; // 預設為 male
+  image.src = `images/${gender}/${group}.png`;
+
+  plans[student][group].forEach(e => {
+    const tag = document.createElement('div');
+    tag.className = 'tag';
+    tag.textContent = e;
+    container.appendChild(tag);
+  });
+}
 
   document.getElementById('muscleGroup').addEventListener('change', renderTags);
 
