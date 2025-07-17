@@ -140,44 +140,45 @@
   <footer>© 2025 Lory Fitness. All rights reserved.</footer>
 
   <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const student = urlParams.get('student') || 'lijia';
+  const urlParams = new URLSearchParams(window.location.search);
+  const student = urlParams.get('student') || 'lijia';
+  let plans = {};
 
-    const plans = {
-      lijia: {
-        chest: ["史密斯上胸 10kg（單邊）", "機械上胸 25kg (單邊)", "槓拎臥推 10kg（單邊）", "啞鈴臥推 12.5kg (單邊)", "機械雙槓下胸 15kg（單邊）", "機械夾胸 30kg", "纜繩前三角 10kg"],
-        back: ["引體向上 補41kg", "機械闊背下拉 20kg", "機械握把划船 10kg", "地雷管寬握划船 15kg", "直臂下拉 20kg", "滑輪下拉 35kg"],
-        shoulder: ["機械寬握肩推 30kg", "機械窄握肩推 30kg", "啞鈴肩飛鳥 5kg（單邊）", "cable後三角 4.5kg（單邊）", "啞鈴後三角 10kg", "纜繩三頭下壓 18kg"],
-        leg: ["哈克蹲 20kg", "史密斯寬距深蹲 12.5kg (單邊)", "機械腿推 25kg (單邊)", "機械前腿 2.5kg", "機械腿外展 40kg", "機械腿後勾 2.5kg"]
-      },
-      zongxiang: {
-        chest: ["史密斯上胸 15kg（單邊）", "槓拎臥推 15kg（單邊）", "機械上胸 25kg (單邊)", "機械夾胸 30kg", "纜繩前三角 10kg"],
-        back: ["機械划船 20kg", "地雷管划船 15kg", "機械闊背下拉 25kg", "cable 闊背下拉 32kg"],
-        shoulder: ["機械寬握肩推 30kg", "機械窄握肩推 30kg", "啞鈴肩飛鳥 5kg（單邊）", "啞鈴後三角 10kg", "纜繩三頭下壓 18kg", "二頭鎚式彎舉 7.5kg (單邊)"],
-        leg: ["哈克蹲 20kg", "機械腿推 25kg", "機械前腿 2.5kg", "機械腿外展 40kg", "機械腿後勾 2.5kg"]
-      }
-    };
+  async function loadPlans() {
+    try {
+      const response = await fetch('students.json');
+      plans = await response.json();
+      renderTags(); // 讀取後再渲染畫面
+    } catch (error) {
+      console.error('載入訓練資料失敗:', error);
+    }
+  }
 
-    function renderTags() {
-      const group = document.getElementById('muscleGroup').value;
-      const container = document.getElementById('tagsContainer');
-      container.innerHTML = '';
+  function renderTags() {
+    const group = document.getElementById('muscleGroup').value;
+    const container = document.getElementById('tagsContainer');
+    const image = document.getElementById('muscleImage');
+    container.innerHTML = '';
 
-      // 切換圖片
-      document.getElementById('muscleImage').src = `images/${group}.png`;
-
-      // 產生標籤
-      const exercises = plans[student][group];
-      exercises.forEach(e => {
-        const tag = document.createElement('div');
-        tag.className = 'tag';
-        tag.textContent = e;
-        container.appendChild(tag);
-      });
+    if (!plans[student] || !plans[student][group]) {
+      container.innerHTML = "<p>尚無資料</p>";
+      image.src = '';
+      return;
     }
 
-    // 預設載入
-    renderTags();
-  </script>
+    // 訓練圖片
+    image.src = `images/${group}.png`;
+    plans[student][group].forEach(e => {
+      const tag = document.createElement('div');
+      tag.className = 'tag';
+      tag.textContent = e;
+      container.appendChild(tag);
+    });
+  }
+
+  document.getElementById('muscleGroup').addEventListener('change', renderTags);
+
+  loadPlans(); // 頁面載入時執行
+</script>
 </body>
 </html>
