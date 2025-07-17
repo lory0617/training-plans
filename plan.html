@@ -31,7 +31,7 @@
     }
 
     select {
-      font-size: 1.2rem;
+      font-size: 2rem;
       padding: 0.5rem 1rem;
       border-radius: 8px;
       border: none;
@@ -80,6 +80,12 @@
       display: inline-block;
       margin-top: 2rem;
     }
+    
+    .select-wrapper {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
 
     footer {
       margin-top: 1.5rem;
@@ -106,12 +112,15 @@
 </head>
 <body>
   <h1>💪 訓練課表</h1>
+  <div class="select-wrapper">
   <select id="muscleGroup" onchange="renderTags()">
     <option value="chest">胸</option>
     <option value="back">背</option>
     <option value="shoulder">肩</option>
     <option value="leg">腿</option>
   </select>
+</div>
+
 
   <img id="muscleImage" class="muscle-image" src="images/chest.png" alt="訓練部位圖片">
 
