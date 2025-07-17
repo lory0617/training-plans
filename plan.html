@@ -26,7 +26,7 @@
 
     h1 {
       font-size: 2.5rem;
-      color: #333;
+      color: #33333;
       margin-bottom: 1rem;
     }
 
@@ -38,6 +38,14 @@
       background-color: var(--color3);
       color: white;
       margin-bottom: 2rem;
+    }
+
+    .muscle-image {
+      max-width: 100%;
+      width: 500px;
+      border-radius: 12px;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     }
 
     .tags {
@@ -62,10 +70,6 @@
       transform: scale(1.05);
     }
 
-    .hidden {
-      display: none;
-    }
-
     .back-btn {
       background-color: var(--color2);
       color: white;
@@ -78,9 +82,25 @@
     }
 
     footer {
-      margin-top: 2rem;
+      margin-top: 1.5rem;
       font-size: 0.9rem;
-      color: #333;
+      color: #33333;
+    }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 2rem;
+      }
+      select {
+        font-size: 1rem;
+      }
+      .muscle-image {
+        width: 90%;
+      }
+      .tag {
+        font-size: 0.9rem;
+        padding: 0.4rem 0.8rem;
+      }
     }
   </style>
 </head>
@@ -93,11 +113,13 @@
     <option value="leg">腿</option>
   </select>
 
+  <img id="muscleImage" class="muscle-image" src="images/chest.png" alt="訓練部位圖片">
+
   <div id="tagsContainer" class="tags"></div>
 
   <a href="index.html" class="back-btn">🔙 回到首頁</a>
 
-  <footer>© 2025 My Training Planner. All rights reserved.</footer>
+  <footer>© 2025 Lory Fitness. All rights reserved.</footer>
 
   <script>
     const urlParams = new URLSearchParams(window.location.search);
@@ -122,6 +144,11 @@
       const group = document.getElementById('muscleGroup').value;
       const container = document.getElementById('tagsContainer');
       container.innerHTML = '';
+
+      // 切換圖片
+      document.getElementById('muscleImage').src = `images/${group}.png`;
+
+      // 產生標籤
       const exercises = plans[student][group];
       exercises.forEach(e => {
         const tag = document.createElement('div');
@@ -131,7 +158,7 @@
       });
     }
 
-    // 初始渲染
+    // 預設載入
     renderTags();
   </script>
 </body>
