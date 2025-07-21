@@ -104,7 +104,6 @@
       const bmi = calculateBMI(w, h);
       const bmr = calculateBMR(w, h, a, g);
       const calories = estimateCalories(bmr);
-
       const text = `BMI: ${bmi.toFixed(2)} | BMR: ${bmr.toFixed(0)} | Daily Calories: ${calories.toFixed(0)}`;
       document.getElementById('results').textContent = text;
     });
