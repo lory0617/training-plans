@@ -13,3 +13,7 @@ function calculateBMR(weight, height, age, gender) {
 function estimateCalories(bmr, activity = 1.55) {
   return bmr * activity;
 }
+
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = { calculateBMI, calculateBMR, estimateCalories };
+}
