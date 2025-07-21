@@ -73,9 +73,19 @@
       cursor: pointer;
     }
 
-    button:hover, select:hover {
+    button:hover, select:hover, .calc-link:hover {
       transform: scale(1.05);
       background-color: var(--color5);
+    }
+
+    .calc-link {
+      background-color: var(--color2);
+      color: white;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      text-decoration: none;
+      margin-top: 1rem;
+      display: inline-block;
     }
 
     .illustration {
@@ -126,6 +136,7 @@
     </select>
     <button onclick="goToPlan()">確認</button>
   </div>
+  <a href="calculator.html" class="calc-link">🔥 健身計算器</a>
 
   <img src="images/fitness_pair.png" alt="健身示意圖" class="illustration">
   <footer>

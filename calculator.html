@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fitness Calculator</title>
+  <style>
+    :root {
+      --color1: #57A0D5;
+      --color2: #00BBE0;
+      --color3: #00D2D3;
+      --color4: #4CE6B3;
+      --color5: #A5F38D;
+      --color6: #F9F871;
+      --text-dark: #1f1f1f;
+    }
+
+    body {
+      font-family: "Helvetica Neue", sans-serif;
+      margin: 0;
+      padding: 2rem;
+      background: linear-gradient(135deg, var(--color1), var(--color4));
+      color: var(--text-dark);
+      text-align: center;
+    }
+
+    form {
+      background: rgba(255,255,255,0.8);
+      padding: 1.5rem;
+      border-radius: 12px;
+      max-width: 400px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    input, select, button {
+      font-size: 1rem;
+      padding: 0.5rem;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+    }
+
+    button {
+      background-color: var(--color2);
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: var(--color5);
+    }
+
+    .result {
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-top: 2rem;
+      background-color: var(--color2);
+      color: white;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>Fitness Calculator</h1>
+  <form id="calcForm">
+    <label>Height (cm)
+      <input type="number" id="height" required>
+    </label>
+    <label>Weight (kg)
+      <input type="number" id="weight" required>
+    </label>
+    <label>Age
+      <input type="number" id="age" required>
+    </label>
+    <label>Gender
+      <select id="gender">
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+      </select>
+    </label>
+    <button type="submit">計算</button>
+  </form>
+  <div id="results" class="result"></div>
+  <a href="index.html" class="back-link">返回首頁</a>
+
+  <script src="fitness-calc.js"></script>
+  <script>
+    document.getElementById('calcForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const h = parseFloat(document.getElementById('height').value);
+      const w = parseFloat(document.getElementById('weight').value);
+      const a = parseInt(document.getElementById('age').value, 10);
+      const g = document.getElementById('gender').value;
+
+      const bmi = calculateBMI(w, h);
+      const bmr = calculateBMR(w, h, a, g);
+      const calories = estimateCalories(bmr);
+
+      const text = `BMI: ${bmi.toFixed(2)} | BMR: ${bmr.toFixed(0)} | Daily Calories: ${calories.toFixed(0)}`;
+      document.getElementById('results').textContent = text;
+    });
+  </script>
+</body>
+</html>
