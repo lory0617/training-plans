@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>TDEE & BMR 計算</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --color1: #57A0D5;
+      --color2: #00BBE0;
+      --color3: #00D2D3;
+      --color4: #4CE6B3;
+      --color5: #A5F38D;
+      --color6: #F9F871;
+      --text-dark: #1f1f1f;
+    }
+
+    body {
+      font-family: "Helvetica Neue", sans-serif;
+      margin: 0;
+      padding: 2rem;
+      background: linear-gradient(135deg, var(--color1), var(--color4));
+      color: var(--text-dark);
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 3rem;
+      color: #333333;
+      margin-bottom: 2rem;
+    }
+
+    label {
+      font-size: 2rem;
+      color: #333333;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    .selector-wrapper {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      padding: 2rem;
+      border-radius: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.1);
+      margin: 0 auto 2rem auto;
+      max-width: 600px;
+      width: 90%;
+    }
+
+    select, button, input {
+      font-size: 1.5rem;
+      padding: 0.6rem 1rem;
+      margin: 0.5rem;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      transition: background-color 0.3s, transform 0.2s;
+    }
+
+    select, input {
+      background-color: var(--color3);
+      color: white;
+    }
+
+    button {
+      background-color: var(--color2);
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover, select:hover, input:hover {
+      transform: scale(1.05);
+      background-color: var(--color5);
+    }
+
+    footer {
+      font-size: 0.9rem;
+      color: #ffffffcc;
+      margin-top: 2rem;
+    }
+
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 2rem;
+      }
+      label {
+        font-size: 1.2rem;
+      }
+      select, button, input {
+        font-size: 1.2rem;
+        width: 80%;
+      }
+      .selector-wrapper {
+        padding: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>計算你的 TDEE</h1>
+
+  <div class="selector-wrapper">
+    <label>請選擇方式</label>
+    <select id="modeSelect" onchange="toggleMode()">
+      <option value="manual">自行填寫基礎代謝率</option>
+      <option value="auto">輸入基本資料來計算基礎代謝率</option>
+    </select>
+
+    <div id="manualFields">
+      <input type="number" id="manualBmr" placeholder="BMR">
+    </div>
+
+    <div id="autoFields" style="display:none">
+      <select id="gender">
+        <option value="male">男性</option>
+        <option value="female">女性</option>
+      </select>
+      <input type="number" id="age" placeholder="年齡">
+      <input type="number" id="height" placeholder="身高 (cm)">
+      <input type="number" id="weight" placeholder="體重 (kg)">
+    </div>
+
+    <select id="activity">
+      <option value="1.2">幾乎不運動</option>
+      <option value="1.375">輕量運動</option>
+      <option value="1.55">中度運動</option>
+      <option value="1.725">高強度運動</option>
+      <option value="1.9">非常高強度</option>
+    </select>
+
+    <button onclick="calc()">計算 TDEE 及建議營養素</button>
+    <div id="result"></div>
+  </div>
+
+  <a href="index.html" class="back-btn">🔙 回到首頁</a>
+
+  <footer>© 2025 Lory Fitness. All rights reserved.</footer>
+
+  <script>
+    function toggleMode() {
+      const mode = document.getElementById('modeSelect').value;
+      document.getElementById('manualFields').style.display = mode === 'manual' ? '' : 'none';
+      document.getElementById('autoFields').style.display = mode === 'auto' ? '' : 'none';
+    }
+
+    function calcBMR(gender, age, height, weight) {
+      if (gender === 'male') {
+        return 10 * weight + 6.25 * height - 5 * age + 5;
+      } else {
+        return 10 * weight + 6.25 * height - 5 * age - 161;
+      }
+    }
+
+    function calc() {
+      const mode = document.getElementById('modeSelect').value;
+      let bmr;
+      if (mode === 'manual') {
+        bmr = parseFloat(document.getElementById('manualBmr').value) || 0;
+      } else {
+        const gender = document.getElementById('gender').value;
+        const age = parseFloat(document.getElementById('age').value) || 0;
+        const height = parseFloat(document.getElementById('height').value) || 0;
+        const weight = parseFloat(document.getElementById('weight').value) || 0;
+        bmr = calcBMR(gender, age, height, weight);
+      }
+      const factor = parseFloat(document.getElementById('activity').value);
+      const tdee = Math.round(bmr * factor);
+
+      const proteinCal = tdee * 0.3;
+      const fatCal = tdee * 0.25;
+      const carbCal = tdee * 0.45;
+      const p = Math.round(proteinCal / 4);
+      const f = Math.round(fatCal / 9);
+      const c = Math.round(carbCal / 4);
+
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML =
+        `每日所需熱量約為 ${tdee} kcal<br>` +
+        `蛋白質: ${p} g、脂肪: ${f} g、碳水: ${c} g<br>` +
+        `建議餐點: 早餐以高蛋白食材為主、午餐搭配均衡碳水、晚餐多蔬菜與優質脂肪`;
+    }
+  </script>
+</body>
+</html>
