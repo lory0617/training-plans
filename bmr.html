@@ -177,15 +177,14 @@
       }
     }
 
-    function calculate_total_calories(bmr, factor, goal, exp) {
-      const base = bmr * factor;
+    function calculate_total_calories(tdee, goal, exp) {
       let adjust = 0;
       if (goal === 'gain') {
         adjust = exp === 'newbie' ? 300 : 200;
       } else {
         adjust = exp === 'newbie' ? -300 : -200;
       }
-      return base + adjust;
+      return tdee + adjust;
     }
 
     function calculate_macronutrients(total, goal) {
@@ -199,18 +198,11 @@
       };
     }
 
-    function suggest_foods(goal) {
-      if (goal === 'gain') {
-        return {
-          protein: ['雞胸肉', '牛肉', '豆腐'],
-          carbs: ['糙米', '馬鈴薯', '燕麥'],
-          fat: ['堅果', '橄欖油', '酪梨']
-        };
-      }
+    function suggest_foods() {
       return {
-        protein: ['雞胸肉', '魚', '蛋白粉'],
-        carbs: ['地瓜', '南瓜', '蔬菜'],
-        fat: ['酪梨', '橄欖油', '亞麻仁籽']
+        protein: ['雞胸肉', '鮭魚', '牛肉', '乳清蛋白粉'],
+        fat: ['堅果', '橄欖油'],
+        carbs: ['白米', '燕麥', '地瓜', '馬鈴薯']
       };
     }
 
@@ -231,15 +223,55 @@
       const goal = document.getElementById('goal').value;
       const exp = document.getElementById('experience').value;
 
-      const total = Math.round(calculate_total_calories(bmr, factor, goal, exp));
+      const tdee = bmr * factor;
+      const total = calculate_total_calories(tdee, goal, exp);
       const macros = calculate_macronutrients(total, goal);
-      const foods = suggest_foods(goal);
+      const foods = suggest_foods();
+
+      const pMin = Math.round(macros.protein * 0.9);
+      const pMax = Math.round(macros.protein * 1.1);
+      const fMin = Math.round(macros.fat * 0.9);
+      const fMax = Math.round(macros.fat * 1.1);
+
+      const proteinContent = {
+        '雞胸肉': 30,
+        '鮭魚': 20,
+        '牛肉': 26,
+        '乳清蛋白粉': 23
+      };
+      const fatContent = {
+        '堅果': 5,
+        '橄欖油': 10
+      };
+      const carbContent = {
+        '白米': 29,
+        '燕麥': 60,
+        '地瓜': 23,
+        '馬鈴薯': 18
+      };
+
+      const proteinFoods = foods.protein
+        .map(f => `${f}: ${Math.round(macros.protein / proteinContent[f])} 份`)
+        .join('、');
+      const fatFoods = foods.fat
+        .map(f => `${f}: ${Math.round(macros.fat / fatContent[f])} 份`)
+        .join('、');
+      const carbFoods = foods.carbs
+        .map(f => `${f}: ${Math.round(macros.carbs / carbContent[f])} 份`)
+        .join('、');
 
       const resultDiv = document.getElementById('result');
       resultDiv.innerHTML =
-        `每日總熱量約為 ${total} kcal<br>` +
-        `蛋白質: ${macros.protein} g、脂肪: ${macros.fat} g、碳水: ${macros.carbs} g<br>` +
-        `範例食材: 蛋白質(${foods.protein.join('、')})、碳水(${foods.carbs.join('、')})、脂肪(${foods.fat.join('、')})`;
+        `您的基礎代謝量(BMR)：${bmr.toFixed(1)} 卡路里<br>` +
+        `您每日所需攝取的總熱量(TDEE)：${Math.round(tdee)} 卡路里<br>` +
+        `建議每日攝取的總熱量：${Math.round(total)} 卡路里<br>` +
+        `建議每日攝取的蛋白質：${pMin} - ${pMax} 克<br>` +
+        `建議每日攝取的脂肪：${fMin} - ${fMax} 克<br>` +
+        `建議每日攝取的碳水化合物：${Math.round(macros.carbs)} 克<br>` +
+        `建議食物<br>` +
+        `蛋白質：${proteinFoods}<br>` +
+        `脂肪：${fatFoods}<br>` +
+        `碳水化合物：${carbFoods}`;
     }
   </script>
 </body>
