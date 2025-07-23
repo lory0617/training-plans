@@ -96,13 +96,6 @@
     <label for="studentSelect">🙋🏻‍♂️🙋🏻‍♀️學員列表</label>
     <select id="studentSelect">
       <option value="" disabled selected>請選擇</option>
-      <option value="lijia">禮嘉</option>
-      <option value="zongxiang">宗翔</option>
-      <option value="Ernie">Ernie</option>
-      <option value="Marty">Marty</option>
-      <option value="33">33</option>
-      <option value="Bella">Bella</option>
-      <option value="Jerry">維峰</option>
     </select>
     <button onclick="goToPlan()">確認</button>
     <button onclick="window.location.href='bmr.html'">計算 BMR / TDEE</button>
@@ -113,6 +106,21 @@
     © 2025 Lory Fitness. All rights reserved.
   </footer>
   <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const res = await fetch('students.json');
+        const data = await res.json();
+        const select = document.getElementById('studentSelect');
+        Object.keys(data).forEach(name => {
+          const opt = document.createElement('option');
+          opt.value = name;
+          opt.textContent = name;
+          select.appendChild(opt);
+        });
+      } catch (err) {
+        console.error('failed to load students list', err);
+      }
+    });
     function goToPlan() {
       const student = document.getElementById("studentSelect").value;
       window.location.href = `plan.html?student=${student}`;
