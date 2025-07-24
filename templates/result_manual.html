@@ -3,33 +3,61 @@
 <head>
   <meta charset="UTF-8">
   <title>計算結果</title>
+  <style>
+  .nutrition-result {
+    font-size: 0.95em;
+    color: #333;
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 18px 24px;
+    margin: 24px 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    font-family: 'Noto Sans TC', 'Microsoft JhengHei', Arial, sans-serif;
+    line-height: 1.7;
+  }
+  .nutrition-result h2 {
+    font-size: 1.1em;
+    margin-bottom: 12px;
+    color: #2d6a4f;
+    font-weight: 600;
+  }
+  .nutrition-result ul {
+    margin: 0 0 0 1.2em;
+    padding: 0;
+  }
+  .nutrition-result li {
+    margin-bottom: 4px;
+  }
+  </style>
 </head>
 <body>
   <h1>計算結果</h1>
-  <p>您的基礎代謝量(BMR)：{{ bmr }} 卡路里</p>
-  <p>您每日所需攝取的總熱量(TDEE)：{{ tdee }} 卡路里</p>
-  <p>建議每日攝取的總熱量：{{ total_calories }} 卡路里</p>
-  <p>建議每日攝取的蛋白質：{{ protein_min }} - {{ protein_max }} 克</p>
-  <p>建議每日攝取的脂肪：{{ fat_min }} - {{ fat_max }} 克</p>
-  <p>建議每日攝取的碳水化合物：{{ carbs }} 克</p>
-  <h2>建議食物</h2>
-  <h3>蛋白質(每份100 g)</h3>
-  <ul>
-    {% for food, servings in protein_foods.items() %}
-      <li>{{ food }}: {{ servings }} 份 ({{ food }}每100g 含有約{{ protein_content[food] }}g 蛋白質)</li>
-    {% endfor %}
-  </ul>
-  <h3>脂肪(每份10 g)</h3>
-  <ul>
-    {% for food, servings in fat_foods.items() %}
-      <li>{{ food }}: {{ servings }} 份 ({{ food }}每10g 含有約{{ fat_content[food] }}g 脂肪)</li>
-    {% endfor %}
-  </ul>
-  <h3>碳水化合物(每份100 g)</h3>
-  <ul>
-    {% for food, servings in carb_foods.items() %}
-      <li>{{ food }}: {{ servings }} 份 ({{ food }}每100g 含有約{{ carb_content[food] }}g 碳水化合物)</li>
-    {% endfor %}
-  </ul>
+  <div class="nutrition-result">
+    <p>您的基礎代謝量(BMR)：{{ bmr }} 卡路里</p>
+    <p>您每日所需攝取的總熱量(TDEE)：{{ tdee }} 卡路里</p>
+    <p>建議每日攝取的總熱量：{{ total_calories }} 卡路里</p>
+    <p>建議每日攝取的蛋白質：{{ protein_min }} - {{ protein_max }} 克</p>
+    <p>建議每日攝取的脂肪：{{ fat_min }} - {{ fat_max }} 克</p>
+    <p>建議每日攝取的碳水化合物：{{ carbs }} 克</p>
+    <h2>建議食物</h2>
+    <h3>蛋白質(每份100 g)</h3>
+    <ul>
+      {% for food, servings in protein_foods.items() %}
+        <li>{{ food }}: {{ servings }} 份 ({{ food }}每100g 含有約{{ protein_content[food] }}g 蛋白質)</li>
+      {% endfor %}
+    </ul>
+    <h3>脂肪(每份10 g)</h3>
+    <ul>
+      {% for food, servings in fat_foods.items() %}
+        <li>{{ food }}: {{ servings }} 份 ({{ food }}每10g 含有約{{ fat_content[food] }}g 脂肪)</li>
+      {% endfor %}
+    </ul>
+    <h3>碳水化合物(每份100 g)</h3>
+    <ul>
+      {% for food, servings in carb_foods.items() %}
+        <li>{{ food }}: {{ servings }} 份 ({{ food }}每100g 含有約{{ carb_content[food] }}g 碳水化合物)</li>
+      {% endfor %}
+    </ul>
+  </div>
 </body>
 </html>
