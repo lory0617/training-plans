@@ -95,6 +95,84 @@
       margin-top: 2rem;
     }
 
+    /* 計算結果樣式 */
+    .result-tag {
+      background: linear-gradient(135deg, #2d6a4f, #40916c);
+      color: white;
+      padding: 16px 24px;
+      margin: 20px 0 0 0;
+      font-size: 1.3em;
+      font-weight: 600;
+      text-align: center;
+      letter-spacing: 1px;
+      border-radius: 12px 12px 0 0;
+    }
+    
+    .result-block {
+      padding: 32px;
+      background: white;
+      border-radius: 0 0 12px 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .nutrition-result {
+      font-size: 0.95em;
+      color: #333;
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 24px;
+      margin: 0;
+      border-left: 4px solid #2d6a4f;
+      line-height: 1.7;
+      font-family: 'Noto Sans TC', 'Microsoft JhengHei', Arial, sans-serif;
+    }
+    
+    .basic-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .basic-info p {
+      background: white;
+      padding: 16px;
+      margin: 0;
+      border-radius: 6px;
+      border: 1px solid #dee2e6;
+      font-weight: 500;
+    }
+    
+    .nutrition-result h2 {
+      font-size: 1.2em;
+      margin: 24px 0 16px 0;
+      color: #2d6a4f;
+      font-weight: 600;
+      border-bottom: 2px solid #e9ecef;
+      padding-bottom: 8px;
+    }
+    
+    .nutrition-result h2:first-of-type {
+      margin-top: 16px;
+    }
+    
+    .nutrition-result h3 {
+      font-size: 1.05em;
+      margin: 20px 0 12px 0;
+      color: #495057;
+      font-weight: 500;
+    }
+    
+    .nutrition-result ul {
+      margin: 0 0 0 1.2em;
+      padding: 0;
+    }
+    
+    .nutrition-result li {
+      margin-bottom: 6px;
+      color: #495057;
+    }
+
     @media (max-width: 600px) {
       h1 {
         font-size: 2rem;
@@ -108,6 +186,16 @@
       }
       .selector-wrapper {
         padding: 1rem;
+      }
+      .basic-info {
+        grid-template-columns: 1fr;
+      }
+      .result-tag {
+        font-size: 1.1em;
+        padding: 12px 16px;
+      }
+      .result-block {
+        padding: 20px;
       }
     }
   </style>
@@ -155,7 +243,17 @@
     </select>
 
     <button onclick="calc()">計算 TDEE 及建議營養素</button>
-    <div id="result"></div>
+    
+    <!-- 計算結果區塊 -->
+    <div id="resultContainer" style="display: none;">
+      <div class="result-tag">計算結果</div>
+      <div class="result-block">
+        <div class="nutrition-result">
+          <div class="basic-info" id="basicInfo"></div>
+          <div id="foodSuggestions"></div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <a href="index.html" class="back-btn">🔙 回到首頁</a>
@@ -250,28 +348,43 @@
         '馬鈴薯': 18
       };
 
-      const proteinFoods = foods.protein
-        .map(f => `${f}: ${Math.round(macros.protein / proteinContent[f])} 份`)
-        .join('、');
-      const fatFoods = foods.fat
-        .map(f => `${f}: ${Math.round(macros.fat / fatContent[f])} 份`)
-        .join('、');
-      const carbFoods = foods.carbs
-        .map(f => `${f}: ${Math.round(macros.carbs / carbContent[f])} 份`)
-        .join('、');
+      // 顯示結果容器
+      document.getElementById('resultContainer').style.display = 'block';
+      
+      // 填入基本資訊
+      const basicInfoDiv = document.getElementById('basicInfo');
+      basicInfoDiv.innerHTML = `
+        <p>您的基礎代謝量(BMR)：<strong>${bmr.toFixed(1)} 卡路里</strong></p>
+        <p>您每日所需攝取的總熱量(TDEE)：<strong>${Math.round(tdee)} 卡路里</strong></p>
+        <p>建議每日攝取的總熱量：<strong>${Math.round(total)} 卡路里</strong></p>
+        <p>建議每日攝取的蛋白質：<strong>${pMin} - ${pMax} 克</strong></p>
+        <p>建議每日攝取的脂肪：<strong>${fMin} - ${fMax} 克</strong></p>
+        <p>建議每日攝取的碳水化合物：<strong>${Math.round(macros.carbs)} 克</strong></p>
+      `;
 
-      const resultDiv = document.getElementById('result');
-      resultDiv.innerHTML =
-        `您的基礎代謝量(BMR)：${bmr.toFixed(1)} 卡路里<br>` +
-        `您每日所需攝取的總熱量(TDEE)：${Math.round(tdee)} 卡路里<br>` +
-        `建議每日攝取的總熱量：${Math.round(total)} 卡路里<br>` +
-        `建議每日攝取的蛋白質：${pMin} - ${pMax} 克<br>` +
-        `建議每日攝取的脂肪：${fMin} - ${fMax} 克<br>` +
-        `建議每日攝取的碳水化合物：${Math.round(macros.carbs)} 克<br>` +
-        `建議食物<br>` +
-        `蛋白質：${proteinFoods}<br>` +
-        `脂肪：${fatFoods}<br>` +
-        `碳水化合物：${carbFoods}`;
+      // 填入食物建議
+      const foodSuggestionsDiv = document.getElementById('foodSuggestions');
+      foodSuggestionsDiv.innerHTML = `
+        <h2>建議食物</h2>
+        <h3>蛋白質(每份100 g)</h3>
+        <ul>
+          ${foods.protein.map(f => 
+            `<li>${f}: ${Math.round(macros.protein / proteinContent[f])} 份 (${f}每100g 含有約${proteinContent[f]}g 蛋白質)</li>`
+          ).join('')}
+        </ul>
+        <h3>脂肪(每份10 g)</h3>
+        <ul>
+          ${foods.fat.map(f => 
+            `<li>${f}: ${Math.round(macros.fat / fatContent[f])} 份 (${f}每10g 含有約${fatContent[f]}g 脂肪)</li>`
+          ).join('')}
+        </ul>
+        <h3>碳水化合物(每份100 g)</h3>
+        <ul>
+          ${foods.carbs.map(f => 
+            `<li>${f}: ${Math.round(macros.carbs / carbContent[f])} 份 (${f}每100g 含有約${carbContent[f]}g 碳水化合物)</li>`
+          ).join('')}
+        </ul>
+      `;
     }
   </script>
 </body>
