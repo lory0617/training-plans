@@ -4,41 +4,109 @@
   <meta charset="UTF-8">
   <title>計算結果</title>
   <style>
+  body {
+    font-family: 'Noto Sans TC', 'Microsoft JhengHei', Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f5f5f5;
+  }
+  
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    overflow: hidden;
+  }
+  
+  .result-tag {
+    background: linear-gradient(135deg, #2d6a4f, #40916c);
+    color: white;
+    padding: 16px 24px;
+    margin: 0;
+    font-size: 1.3em;
+    font-weight: 600;
+    text-align: center;
+    letter-spacing: 1px;
+  }
+  
+  .result-block {
+    padding: 32px;
+    background: white;
+  }
+  
   .nutrition-result {
     font-size: 0.95em;
     color: #333;
     background: #f8f9fa;
     border-radius: 8px;
-    padding: 18px 24px;
-    margin: 24px 0;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    font-family: 'Noto Sans TC', 'Microsoft JhengHei', Arial, sans-serif;
+    padding: 24px;
+    margin: 0;
+    border-left: 4px solid #2d6a4f;
     line-height: 1.7;
   }
+  
   .nutrition-result h2 {
-    font-size: 1.1em;
-    margin-bottom: 12px;
+    font-size: 1.2em;
+    margin: 24px 0 16px 0;
     color: #2d6a4f;
     font-weight: 600;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 8px;
   }
+  
+  .nutrition-result h2:first-of-type {
+    margin-top: 16px;
+  }
+  
+  .nutrition-result h3 {
+    font-size: 1.05em;
+    margin: 20px 0 12px 0;
+    color: #495057;
+    font-weight: 500;
+  }
+  
   .nutrition-result ul {
     margin: 0 0 0 1.2em;
     padding: 0;
   }
+  
   .nutrition-result li {
-    margin-bottom: 4px;
+    margin-bottom: 6px;
+    color: #495057;
+  }
+  
+  .basic-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  
+  .basic-info p {
+    background: white;
+    padding: 16px;
+    margin: 0;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+    font-weight: 500;
   }
   </style>
 </head>
 <body>
-  <h1>計算結果</h1>
-  <div class="nutrition-result">
-    <p>您的基礎代謝量(BMR)：{{ bmr }} 卡路里</p>
-    <p>您每日所需攝取的總熱量(TDEE)：{{ tdee }} 卡路里</p>
-    <p>建議每日攝取的總熱量：{{ total_calories }} 卡路里</p>
-    <p>建議每日攝取的蛋白質：{{ protein_min }} - {{ protein_max }} 克</p>
-    <p>建議每日攝取的脂肪：{{ fat_min }} - {{ fat_max }} 克</p>
-    <p>建議每日攝取的碳水化合物：{{ carbs }} 克</p>
+  <div class="container">
+    <div class="result-tag">計算結果</div>
+    <div class="result-block">
+      <div class="nutrition-result">
+        <div class="basic-info">
+          <p>您的基礎代謝量(BMR)：<strong>{{ bmr }} 卡路里</strong></p>
+          <p>您每日所需攝取的總熱量(TDEE)：<strong>{{ tdee }} 卡路里</strong></p>
+          <p>建議每日攝取的總熱量：<strong>{{ total_calories }} 卡路里</strong></p>
+          <p>建議每日攝取的蛋白質：<strong>{{ protein_min }} - {{ protein_max }} 克</strong></p>
+          <p>建議每日攝取的脂肪：<strong>{{ fat_min }} - {{ fat_max }} 克</strong></p>
+          <p>建議每日攝取的碳水化合物：<strong>{{ carbs }} 克</strong></p>
+        </div>
     <h2>建議食物</h2>
     <h3>蛋白質(每份100 g)</h3>
     <ul>
@@ -57,7 +125,9 @@
       {% for food, servings in carb_foods.items() %}
         <li>{{ food }}: {{ servings }} 份 ({{ food }}每100g 含有約{{ carb_content[food] }}g 碳水化合物)</li>
       {% endfor %}
-    </ul>
+        </ul>
+      </div>
+    </div>
   </div>
 </body>
 </html>
