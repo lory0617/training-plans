@@ -163,6 +163,7 @@
     .exercise-row input:focus { border-color: var(--gold); }
     .exercise-row input.ex-name { flex: 2; }
     .exercise-row input.ex-weight { flex: 1; }
+    .exercise-row input.ex-sets { flex: 0.8; }
     .exercise-row .ex-remove { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 1.1rem; padding: 0.3rem; opacity: 0.6; }
     .exercise-row .ex-remove:hover { opacity: 1; }
     .exercise-add-btn { background: none; border: 1px dashed var(--border); border-radius: 6px; color: var(--text-muted); padding: 0.5rem; width: 100%; cursor: pointer; font-size: 0.85rem; font-family: 'Noto Sans TC', sans-serif; transition: all 0.2s; }
@@ -200,6 +201,7 @@
     .record-exercises { margin-top: 0.5rem; }
     .record-exercises .re-item { font-size: 0.85rem; color: var(--text-muted); padding: 0.15rem 0; }
     .record-exercises .re-item .re-weight { color: var(--gold); }
+    .record-exercises .re-item .re-sets { color: var(--text-muted); margin-left: 0.3rem; }
 
     /* Toast */
     .toast {
@@ -722,7 +724,7 @@
           let exercisesHtml = '';
           if (r.exercises && r.exercises.length > 0) {
             exercisesHtml = '<div class="record-exercises">' +
-              r.exercises.map(e => `<div class="re-item">${e.name} <span class="re-weight">${e.weight}</span></div>`).join('') +
+              r.exercises.map(e => `<div class="re-item">${e.name} <span class="re-weight">${e.weight}</span>${e.sets ? `<span class="re-sets">${e.sets}</span>` : ''}</div>`).join('') +
               '</div>';
           }
 
@@ -805,7 +807,7 @@
       } catch (err) { console.error(err); }
     }
 
-    function addExerciseRow(containerId, name, weight) {
+    function addExerciseRow(containerId, name, weight, sets) {
       const container = document.getElementById(containerId);
       const row = document.createElement('div');
       row.className = 'exercise-row';
@@ -813,6 +815,7 @@
       row.innerHTML = `
         <input class="ex-name" placeholder="動作名稱" value="${name || ''}" oninput="showExSuggest(this)" onfocus="showExSuggest(this)" onblur="setTimeout(()=>hideExSuggest(this),200)">
         <input class="ex-weight" placeholder="重量" value="${weight || ''}">
+        <input class="ex-sets" placeholder="組×次" value="${sets || ''}">
         <button type="button" class="ex-remove" onclick="this.parentElement.remove()">✕</button>
         <div class="exercise-suggest" style="display:none; top:100%; left:0;"></div>`;
       container.appendChild(row);
@@ -954,7 +957,8 @@
       rows.forEach(row => {
         const name = row.querySelector('.ex-name').value.trim();
         const weight = row.querySelector('.ex-weight').value.trim();
-        if (name) exercises.push({ name, weight });
+        const sets = row.querySelector('.ex-sets').value.trim();
+        if (name) exercises.push({ name, weight, sets });
       });
       return exercises;
     }
@@ -970,7 +974,7 @@
       allBookings.forEach(b => {
         if (b.exercises) {
           b.exercises.forEach(e => {
-            if (e.name) latestExercises[e.name] = e.weight || '-';
+            if (e.name) latestExercises[e.name] = { weight: e.weight || '-', sets: e.sets || '' };
           });
         }
       });
@@ -980,10 +984,10 @@
 
       section.style.display = 'block';
       grid.innerHTML = '';
-      entries.forEach(([name, weight]) => {
+      entries.forEach(([name, info]) => {
         const item = document.createElement('div');
         item.className = 'exercise-ref-item';
-        item.innerHTML = `<span class="ex-ref-name">${name}</span><span class="ex-ref-weight">${weight}</span>`;
+        item.innerHTML = `<span class="ex-ref-name">${name}</span><span class="ex-ref-weight">${info.weight}${info.sets ? ' · ' + info.sets : ''}</span>`;
         grid.appendChild(item);
       });
     }
@@ -1210,7 +1214,7 @@
               if (b.notes) inner += `<div style="color:var(--text);font-size:0.85rem;margin-top:0.3rem">${b.notes}</div>`;
               if (b.exercises && b.exercises.length) {
                 inner += '<div class="record-exercises" style="margin-top:0.4rem">' +
-                  b.exercises.map(e => `<div class="re-item">${e.name} <span class="re-weight">${e.weight}</span></div>`).join('') +
+                  b.exercises.map(e => `<div class="re-item">${e.name} <span class="re-weight">${e.weight}</span>${e.sets ? `<span class="re-sets">${e.sets}</span>` : ''}</div>`).join('') +
                   '</div>';
               }
               detailHtml = `<div id="${detailId}" style="display:none;padding:0.75rem 0 0;border-top:1px solid var(--border);margin-top:0.75rem">${inner}</div>`;
