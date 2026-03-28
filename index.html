@@ -2,129 +2,647 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>🦾 Lory Fitness training plans</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
+  <title>Lory Fitness — 專業一對一健身教練指導</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #111111;
+      --gold: #f5a623;
+      --gold-dim: rgba(245,166,35,0.15);
+      --text: #f0f0f0;
+      --text-muted: #888;
+      --border: #222;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Noto Sans TC', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
+    h1, h2, h3 { font-family: 'Oswald', sans-serif; }
 
+    /* Reveal animation */
+    .reveal {
+      opacity: 0; transform: translateY(40px);
+      transition: opacity 0.8s cubic-bezier(0.16,1,0.3,1), transform 0.8s cubic-bezier(0.16,1,0.3,1);
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
 
-    h1 {
-      font-size: 3rem;
-      color: #333333;
-      margin-bottom: 2rem;
+    /* Floating */
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+
+    /* Nav */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+      padding: 1.2rem 3rem; display: flex; justify-content: space-between; align-items: center;
+      transition: background 0.4s, padding 0.3s;
+    }
+    nav.scrolled { background: rgba(10,10,10,0.95); backdrop-filter: blur(12px); padding: 0.8rem 3rem; }
+    .nav-brand { font-family: 'Oswald', sans-serif; font-size: 1.2rem; color: var(--gold); text-decoration: none; font-weight: 600; letter-spacing: 3px; }
+    .nav-links { display: flex; gap: 2rem; align-items: center; }
+    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; letter-spacing: 1px; transition: color 0.3s; font-weight: 300; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-admin { position: fixed; bottom: 1.5rem; left: 1.5rem; z-index: 100; font-size: 0.65rem; letter-spacing: 2px; opacity: 0.25; padding: 0.35rem 0.8rem; border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; transition: all 0.3s; cursor: pointer; color: var(--text-muted); text-decoration: none; }
+    .nav-admin:hover { opacity: 0.8; color: var(--gold); border-color: var(--gold); }
+
+    /* Hero */
+    .hero {
+      position: relative; height: 100vh; display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0; background-size: cover; background-position: center 15%;
+      filter: brightness(0.25) saturate(0.8); transform: scale(1.1);
+      transition: transform 0.1s linear;
+    }
+    .hero-content { position: relative; z-index: 1; text-align: center; }
+    .hero h1 {
+      font-size: clamp(3rem, 8vw, 6rem); color: var(--gold); letter-spacing: 8px;
+      font-weight: 700; line-height: 1.1; margin-bottom: 1.5rem;
+      animation: float 4s ease-in-out infinite;
+    }
+    .hero .slogan {
+      font-size: clamp(1rem, 2.5vw, 1.4rem); color: var(--text); font-weight: 300;
+      letter-spacing: 4px; margin-bottom: 3rem; opacity: 0.8;
+    }
+    .hero .cta-btn {
+      display: inline-block; padding: 1rem 3rem; border: 1px solid var(--gold); color: var(--gold);
+      font-size: 0.9rem; font-weight: 400; letter-spacing: 3px; text-decoration: none;
+      transition: all 0.4s; background: transparent; font-family: 'Oswald', sans-serif;
+    }
+    .hero .cta-btn:hover { background: var(--gold); color: var(--bg); }
+    .hero-socials { display: flex; justify-content: center; gap: 1.5rem; margin-top: 2rem; }
+    .hero-social {
+      width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-muted); text-decoration: none; font-size: 1.1rem;
+      transition: all 0.3s;
+    }
+    .hero-social:hover { border-color: var(--gold); color: var(--gold); transform: translateY(-3px); }
+    .hero-social svg { width: 20px; height: 20px; fill: currentColor; }
+    .hero-toast {
+      position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(80px);
+      background: var(--surface); border: 1px solid var(--gold); border-radius: 50px;
+      padding: 0.7rem 1.5rem; color: var(--gold); font-size: 0.85rem; z-index: 200;
+      opacity: 0; transition: all 0.3s ease; pointer-events: none;
+    }
+    .hero-toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .hero-scroll {
+      position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+      color: var(--text-muted); font-size: 0.75rem; letter-spacing: 2px;
+      animation: float 2s ease-in-out infinite;
     }
 
-    label {
-      font-size: 2rem;
-      color: #333333;
-      margin-bottom: 1rem;
-      display: block;
+    /* Section Tabs */
+    .section-tabs {
+      display: flex; justify-content: center; gap: 0;
+      border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 999;
+      background: rgba(10,10,10,0.97); backdrop-filter: blur(12px);
+    }
+    .section-tab {
+      padding: 0.7rem 1.8rem; color: rgba(255,255,255,0.7); text-decoration: none;
+      font-family: 'Oswald', sans-serif; font-size: 0.8rem; letter-spacing: 3px;
+      transition: all 0.3s; position: relative;
+    }
+    .section-tab::after {
+      content: ''; position: absolute; bottom: 0; left: 50%; width: 0; height: 2px;
+      background: var(--gold); transition: all 0.3s; transform: translateX(-50%);
+    }
+    .section-tab:hover { color: var(--gold); }
+    .section-tab:hover::after { width: 100%; }
+
+    /* Section */
+    .section { padding: 8rem 2rem; max-width: 1100px; margin: 0 auto; }
+    .section-label {
+      font-family: 'Oswald', sans-serif; font-size: 0.75rem; color: var(--gold);
+      letter-spacing: 4px; text-transform: uppercase; margin-bottom: 1rem;
+    }
+    .section-title { font-size: clamp(2rem, 4vw, 3rem); font-weight: 300; letter-spacing: 2px; margin-bottom: 1rem; }
+    .section-line { width: 40px; height: 2px; background: var(--gold); margin-bottom: 3rem; }
+
+    /* About */
+    .about-layout { display: grid; grid-template-columns: auto 1fr 1fr; gap: 3rem; align-items: start; }
+    .about-photo {
+      width: 220px; height: 300px; border-radius: 20px; object-fit: cover;
+      border: 2px solid var(--border); transition: all 0.5s;
+      filter: grayscale(0.3);
+    }
+    .about-photo:hover { filter: grayscale(0); border-color: var(--gold); transform: scale(1.03); }
+    .about-name { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.3rem; transition: color 0.3s; }
+    .about-name:hover { color: var(--gold); }
+    .about-nick { color: var(--gold); font-size: 0.9rem; letter-spacing: 2px; margin-bottom: 2rem; font-weight: 300; }
+    .about-bio { color: var(--text-muted); line-height: 2; font-size: 0.95rem; font-weight: 300; }
+    .about-quote {
+      margin-top: 2.5rem; padding: 1.5rem 0 1.5rem 1.5rem;
+      border-left: 2px solid var(--gold); color: var(--text); font-style: italic;
+      line-height: 1.8; font-size: 0.95rem; font-weight: 300;
+      transition: all 0.3s;
+    }
+    .about-quote:hover { padding-left: 2rem; border-left-width: 4px; }
+    .about-exp { list-style: none; display: flex; flex-direction: column; gap: 1rem; }
+    .about-exp li {
+      padding: 1.2rem 1.5rem; border-left: 2px solid var(--gold);
+      color: var(--text-muted); font-size: 0.95rem; font-weight: 300;
+      background: linear-gradient(90deg, var(--gold-dim) 0%, transparent 100%);
+      transition: all 0.4s; border-radius: 0 12px 12px 0; cursor: default;
+    }
+    .about-exp li::before { content: '🏋️ '; }
+    .about-exp li:hover { color: var(--text); padding-left: 2rem; background: linear-gradient(90deg, rgba(245,166,35,0.25) 0%, transparent 100%); }
+
+    /* Services */
+    .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 4rem; }
+    .service-item {
+      padding: 3rem 2rem; text-align: center; position: relative; overflow: hidden;
+      border: 1px solid var(--border); border-radius: 16px; transition: all 0.4s; cursor: default;
+    }
+    .service-item::before {
+      content: ''; position: absolute; inset: 0; border-radius: 16px;
+      background: linear-gradient(135deg, var(--gold-dim), transparent);
+      opacity: 0; transition: opacity 0.4s;
+    }
+    .service-item:hover::before { opacity: 1; }
+    .service-item:hover { border-color: rgba(245,166,35,0.3); transform: translateY(-6px); }
+    .service-item h3 {
+      position: relative; font-size: 1.1rem; font-weight: 400; letter-spacing: 2px; margin-bottom: 1rem;
+      transition: all 0.3s;
+    }
+    .service-item:hover h3 { color: var(--gold); letter-spacing: 4px; }
+    .service-item p { position: relative; color: var(--text-muted); font-size: 0.85rem; line-height: 1.8; font-weight: 300; transition: color 0.3s; }
+    .service-item:hover p { color: var(--text); }
+
+    /* BMR Calculator */
+    .bmr-calc {
+      background: linear-gradient(135deg, rgba(245,166,35,0.06) 0%, rgba(10,10,10,0.95) 60%);
+      border: 1px solid var(--border); border-radius: 20px; padding: 3rem; margin-top: 3rem;
+    }
+    .bmr-calc h3 { font-size: 1.5rem; font-weight: 400; letter-spacing: 2px; margin-bottom: 0.5rem; text-align: center; }
+    .bmr-calc .bmr-sub { color: var(--text-muted); text-align: center; margin-bottom: 2rem; font-weight: 300; font-size: 0.9rem; }
+    .bmr-form { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+    .bmr-field label { display: block; font-size: 0.75rem; color: var(--text-muted); letter-spacing: 1px; margin-bottom: 0.3rem; }
+    .bmr-field select, .bmr-field input {
+      width: 100%; padding: 0.7rem 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      border-radius: 10px; color: var(--text); font-size: 0.9rem; font-family: 'Noto Sans TC', sans-serif;
+      outline: none; transition: border-color 0.3s;
+    }
+    .bmr-field select:focus, .bmr-field input:focus { border-color: var(--gold); }
+    .bmr-btn {
+      display: block; margin: 0 auto; padding: 0.8rem 3rem; border: 1px solid var(--gold);
+      background: transparent; color: var(--gold); font-family: 'Oswald', sans-serif;
+      letter-spacing: 2px; font-size: 0.9rem; cursor: pointer; transition: all 0.3s; border-radius: 50px;
+    }
+    .bmr-btn:hover { background: var(--gold); color: var(--bg); }
+    .bmr-result { display: none; margin-top: 2rem; text-align: center; }
+    .bmr-result-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .bmr-result-card {
+      padding: 1.5rem; border: 1px solid var(--border); border-radius: 12px; text-align: center;
+      transition: all 0.3s;
+    }
+    .bmr-result-card:hover { border-color: var(--gold); }
+    .bmr-result-card .bmr-val { font-family: 'Oswald', sans-serif; font-size: 1.8rem; color: var(--gold); font-weight: 600; }
+    .bmr-result-card .bmr-label { font-size: 0.75rem; color: var(--text-muted); letter-spacing: 1px; margin-top: 0.3rem; }
+    .bmr-cta {
+      margin-top: 1.5rem; padding: 2rem; border-radius: 12px;
+      background: linear-gradient(135deg, var(--gold-dim), transparent);
+      text-align: center;
+    }
+    .bmr-cta p { color: var(--text); margin-bottom: 1rem; font-size: 1rem; }
+    .bmr-cta a {
+      display: inline-block; padding: 0.8rem 2.5rem; background: var(--gold); color: var(--bg);
+      border-radius: 50px; text-decoration: none; font-weight: 600; font-size: 0.9rem;
+      transition: all 0.3s;
+    }
+    .bmr-cta a:hover { background: var(--gold-hover); transform: translateY(-2px); }
+
+    /* Stories */
+    .stories-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
+    .story-item {
+      padding: 2rem; border: 1px solid var(--border); border-radius: 16px;
+      transition: all 0.4s; cursor: default;
+    }
+    .story-item:hover { border-color: rgba(245,166,35,0.3); transform: translateY(-4px); }
+    .story-result { font-family: 'Oswald', sans-serif; font-size: 1.8rem; color: var(--gold); font-weight: 300; margin-bottom: 0.5rem; transition: font-size 0.3s; }
+    .story-item:hover .story-result { font-size: 2rem; }
+    .story-name { font-size: 0.8rem; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 1rem; }
+    .story-quote { color: var(--text-muted); font-style: italic; line-height: 1.8; font-weight: 300; font-size: 0.9rem; transition: color 0.3s; }
+    .story-item:hover .story-quote { color: var(--text); }
+
+    /* Milky */
+    .milky-wrap { text-align: center; padding: 6rem 2rem; }
+    .milky-avatar {
+      width: 280px; height: 280px; border-radius: 50%; object-fit: cover;
+      border: 3px solid var(--gold); margin-bottom: 1.5rem; background: var(--surface);
+      display: inline-block; line-height: 280px; font-size: 3rem;
+      animation: float 3s ease-in-out infinite;
+    }
+    .milky-name { font-family: 'Oswald', sans-serif; font-size: 1.1rem; letter-spacing: 3px; margin-bottom: 0.5rem; }
+    .milky-desc { color: var(--text-muted); font-size: 0.85rem; max-width: 400px; margin: 0 auto; font-weight: 300; line-height: 1.8; }
+
+    /* Banner / Parallax Break */
+    .banner-break {
+      position: relative; height: 60vh; display: flex; align-items: center; justify-content: center;
+      overflow: hidden; text-align: center;
+    }
+    .banner-bg {
+      position: absolute; inset: 0; background-size: cover; background-position: center;
+      background-attachment: fixed; filter: brightness(0.2) saturate(0.6);
+    }
+    .banner-text {
+      position: relative; z-index: 1; font-family: 'Oswald', sans-serif;
+      font-size: clamp(1.5rem, 4vw, 2.5rem); font-weight: 300; letter-spacing: 6px;
+      color: var(--text); line-height: 1.6; white-space: pre-line; opacity: 0.9;
+    }
+    .banner-text span { color: var(--gold); }
+
+    /* Stats Strip */
+    .stats-strip {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    }
+    .stat-item {
+      padding: 3rem 2rem; text-align: center; border-right: 1px solid var(--border);
+      transition: all 0.3s; cursor: default;
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-item:hover { background: var(--gold-dim); }
+    .stat-number {
+      font-family: 'Oswald', sans-serif; font-size: 2.5rem; font-weight: 700;
+      color: var(--gold); margin-bottom: 0.3rem;
+    }
+    .stat-label { font-size: 0.8rem; color: var(--text-muted); letter-spacing: 2px; font-weight: 300; }
+
+    /* Contact */
+    .contact-wrap { text-align: center; padding: 8rem 2rem; }
+    .contact-cta { font-size: 1.3rem; font-weight: 300; margin-bottom: 3rem; line-height: 1.8; }
+    .contact-links { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+    .contact-link {
+      padding: 0.8rem 2rem; border: 1px solid var(--border); border-radius: 50px; color: var(--text-muted);
+      text-decoration: none; font-size: 0.85rem; letter-spacing: 1px; transition: all 0.4s; font-weight: 300;
+    }
+    .contact-link:hover { border-color: var(--gold); color: var(--bg); background: var(--gold); transform: translateY(-3px); }
+
+    /* Footer */
+    footer {
+      text-align: center; padding: 2rem; border-top: 1px solid var(--border);
+      color: var(--text-muted); font-size: 0.75rem; font-weight: 300; letter-spacing: 1px;
     }
 
-    .selector-wrapper {
-      background: rgba(255, 255, 255, 0.8); /* 半透明白色 */
-      backdrop-filter: blur(4px); /* 可選：加上一點玻璃毛玻璃模糊效果 */
-      -webkit-backdrop-filter: blur(4px); /* 為 Safari 提供兼容性 */
-      padding: 2rem;
-      border-radius: 16px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      box-shadow: 0 6px 14px rgba(0,0,0,0.1);
-      margin: 0 auto 2rem auto;
-      max-width: 600px;
-      width: 90%;
-    }
-
-    select, button {
-      font-size: 1.5rem;
-      padding: 0.6rem 1rem;
-      margin: 0.5rem;
-      border-radius: 8px;
-      border: none;
-      outline: none;
-      transition: background-color 0.3s, transform 0.2s;
-    }
-
-    select {
-      background-color: var(--color3);
-      color: white;
-    }
-
-    button {
-      background-color: var(--color2);
-      color: white;
-      cursor: pointer;
-    }
-
-    button:hover, select:hover {
-      transform: scale(1.05);
-      background-color: var(--color5);
-    }
-
-    .illustration {
-      max-width: 100%;
-      width: 600px;
-      border-radius: 16px;
-      margin: 0 auto;
-      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
-    }
-
-
-    
-    @media (max-width: 600px) {
-      h1 {
-        font-size: 2rem;
-      }
-      label {
-        font-size: 1.2rem;
-      }
-      select, button {
-        font-size: 1.2rem;
-        width: 80%;
-      }
-      .selector-wrapper {
-        padding: 1rem;
-      }
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      nav.scrolled { padding: 0.8rem 1.5rem; }
+      .section-tab { padding: 0.6rem 0.8rem; font-size: 0.6rem; letter-spacing: 1.5px; }
+      .about-layout { grid-template-columns: 1fr; gap: 2rem; }
+      .about-photo { width: 100%; height: 250px; }
+      .services-grid { grid-template-columns: 1fr; }
+      .section { padding: 5rem 1.5rem; }
+      .stats-strip { grid-template-columns: repeat(2, 1fr); }
+      .stat-item:nth-child(2) { border-right: none; }
+      .banner-bg { background-attachment: scroll; }
     }
   </style>
 </head>
 <body>
-  <h1>🦾 選擇你的名字，確認後進入你的訓練課表 🔥</h1>
 
-  <div class="selector-wrapper">
-    <label for="studentSelect">🙋🏻‍♂️🙋🏻‍♀️學員列表</label>
-    <select id="studentSelect">
-      <option value="" disabled selected>請選擇</option>
-    </select>
-    <button onclick="goToPlan()">確認</button>
-    <button onclick="window.location.href='bmr.html'">計算 BMR / TDEE</button>
+  <nav id="navbar">
+    <a href="#" class="nav-brand" id="navBrand"></a>
+  </nav>
+  <a href="admin.html" class="nav-admin" title="後台">LOGIN</a>
+
+  <section class="hero" id="hero">
+    <div class="hero-bg" id="heroBg"></div>
+    <div class="hero-content">
+      <h1 id="heroBrand"></h1>
+      <p class="slogan" id="heroSlogan"></p>
+      <a href="#contact" class="cta-btn">GET STARTED</a>
+      <div class="hero-socials" id="heroSocials"></div>
+    </div>
+    <div class="hero-scroll">SCROLL ↓</div>
+  </section>
+
+  <nav class="section-tabs">
+    <a href="#hero" class="section-tab">HOME</a>
+    <a href="#about" class="section-tab">ABOUT</a>
+    <a href="#services" class="section-tab">SERVICES</a>
+    <a href="#stories" class="section-tab">STORIES</a>
+    <a href="#milkySection" class="section-tab">MILKY</a>
+    <a href="#contact" class="section-tab">CONTACT</a>
+  </nav>
+
+  <!-- Stats Strip -->
+  <div class="stats-strip">
+    <div class="stat-item reveal"><div class="stat-number">X+</div><div class="stat-label">YEARS EXPERIENCE</div></div>
+    <div class="stat-item reveal reveal-delay-1"><div class="stat-number">50+</div><div class="stat-label">HAPPY CLIENTS</div></div>
+    <div class="stat-item reveal reveal-delay-2"><div class="stat-number">1000+</div><div class="stat-label">SESSIONS COMPLETED</div></div>
+    <div class="stat-item reveal reveal-delay-3"><div class="stat-number">100%</div><div class="stat-label">DEDICATION</div></div>
   </div>
 
-  <img src="images/fitness_pair.png" alt="健身示意圖" class="illustration">
-  <footer>
-    © 2025 Lory Fitness. All rights reserved.
-  </footer>
+  <section class="section" id="about">
+    <div class="section-label reveal">ABOUT</div>
+    <div class="section-line reveal reveal-delay-1"></div>
+    <div class="about-layout">
+      <div class="reveal">
+        <img id="aboutPhoto" class="about-photo" alt="教練照片">
+      </div>
+      <div>
+        <div class="about-name reveal" id="aboutName"></div>
+        <div class="about-nick reveal reveal-delay-1" id="aboutNick"></div>
+        <div class="about-bio reveal reveal-delay-2" id="aboutBio"></div>
+        <div class="about-quote reveal reveal-delay-3" id="aboutQuote"></div>
+      </div>
+      <div>
+        <ul class="about-exp" id="aboutExp"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Banner Break 1 -->
+  <div class="banner-break" id="banner1">
+    <div class="banner-bg" style="background-image:url(images/hero.jpg)"></div>
+    <div class="banner-text reveal">TRAIN HARD.<br><span>STAY HUMBLE.</span></div>
+  </div>
+
+  <section class="section" id="services">
+    <div class="section-label reveal">SERVICES</div>
+    <div class="section-line reveal reveal-delay-1"></div>
+    <div class="services-grid" id="servicesGrid"></div>
+    <div class="bmr-calc reveal" id="bmrCalc">
+      <h3>BMR / TDEE 計算器</h3>
+      <p class="bmr-sub">了解你的基礎代謝率，掌握每日所需熱量</p>
+      <div class="bmr-form">
+        <div class="bmr-field">
+          <label>性別</label>
+          <select id="bmrGender"><option value="male">男性</option><option value="female">女性</option></select>
+        </div>
+        <div class="bmr-field">
+          <label>年齡</label>
+          <input type="number" id="bmrAge" placeholder="25">
+        </div>
+        <div class="bmr-field">
+          <label>身高 (cm)</label>
+          <input type="number" id="bmrHeight" placeholder="170">
+        </div>
+        <div class="bmr-field">
+          <label>體重 (kg)</label>
+          <input type="number" id="bmrWeight" placeholder="70">
+        </div>
+        <div class="bmr-field">
+          <label>活動量</label>
+          <select id="bmrActivity">
+            <option value="1.2">幾乎不運動</option>
+            <option value="1.375">輕量運動（1-3天/週）</option>
+            <option value="1.55" selected>中度運動（3-5天/週）</option>
+            <option value="1.725">高強度運動（6-7天/週）</option>
+            <option value="1.9">非常高強度</option>
+          </select>
+        </div>
+        <div class="bmr-field">
+          <label>目標</label>
+          <select id="bmrGoal">
+            <option value="gain">增肌</option>
+            <option value="loss">減脂</option>
+          </select>
+        </div>
+      </div>
+      <button class="bmr-btn" onclick="calculateBMR()">計算</button>
+      <div class="bmr-result" id="bmrResult">
+        <div class="bmr-result-cards" id="bmrCards"></div>
+        <div class="bmr-cta" id="bmrCta"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Banner Break 2 -->
+  <div class="banner-break" id="banner2">
+    <div class="banner-bg" style="background-image:url(images/hero.jpg)"></div>
+    <div class="banner-text reveal">每一次的堅持<br>都是對<span>未來自己</span>的投資</div>
+  </div>
+
+  <section class="section" id="stories">
+    <div class="section-label reveal">SUCCESS STORIES</div>
+    <div class="section-line reveal reveal-delay-1"></div>
+    <div class="stories-grid" id="storiesGrid"></div>
+  </section>
+
+  <div class="milky-wrap" id="milkySection">
+    <div class="milky-avatar" id="milkyAvatar">🐕</div>
+    <div class="milky-name reveal" id="milkyName"></div>
+    <div class="milky-desc reveal reveal-delay-1" id="milkyDesc"></div>
+  </div>
+
+  <section class="contact-wrap" id="contact">
+    <div class="section-label reveal">CONTACT</div>
+    <div class="section-line reveal reveal-delay-1" style="margin:0 auto 3rem"></div>
+    <p class="contact-cta reveal reveal-delay-2" id="contactCta"></p>
+    <div class="contact-links reveal reveal-delay-3" id="contactLinks"></div>
+  </section>
+
+  <footer id="footer"></footer>
+  <div id="pageToast" class="hero-toast"></div>
+
   <script>
-    document.addEventListener('DOMContentLoaded', async () => {
-      try {
-        const res = await fetch('students.json');
-        const data = await res.json();
-        const select = document.getElementById('studentSelect');
-        Object.keys(data).forEach(name => {
-          const opt = document.createElement('option');
-          opt.value = name;
-          opt.textContent = name;
-          select.appendChild(opt);
-        });
-      } catch (err) {
-        console.error('failed to load students list', err);
-      }
-    });
-    function goToPlan() {
-      const student = document.getElementById("studentSelect").value;
-      window.location.href = `plan.html?student=${student}`;
+    function pageToast(msg) {
+      const t = document.getElementById('pageToast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2500);
     }
+
+    // === Content loader ===
+    async function loadContent() {
+      try {
+        const c = await (await fetch('site-content.json')).json();
+
+        document.getElementById('navBrand').textContent = c.brand;
+        document.getElementById('heroBrand').textContent = c.brand;
+        document.getElementById('heroSlogan').textContent = c.slogan;
+        if (c.heroImage) document.getElementById('heroBg').style.backgroundImage = `url(${c.heroImage})`;
+
+        // Hero social icons
+        const heroSocials = document.getElementById('heroSocials');
+        if (c.contact.instagram) {
+          const a = document.createElement('a');
+          a.className = 'hero-social'; a.href = c.contact.instagram; a.target = '_blank'; a.title = 'Instagram';
+          a.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>';
+          heroSocials.appendChild(a);
+        }
+        if (c.contact.line) {
+          const a = document.createElement('a');
+          a.className = 'hero-social'; a.href = '#'; a.title = `LINE: ${c.contact.line}`;
+          a.innerHTML = '<svg viewBox="0 0 24 24"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .631.285.631.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.281.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>';
+          a.onclick = (e) => {
+            e.preventDefault();
+            navigator.clipboard.writeText(c.contact.line).then(() => {
+              pageToast(`已複製 LINE ID: ${c.contact.line} 到剪貼簿`);
+            });
+          };
+          heroSocials.appendChild(a);
+        }
+
+        if (c.aboutImage) document.getElementById('aboutPhoto').src = c.aboutImage;
+        document.getElementById('aboutName').textContent = c.about.name;
+        document.getElementById('aboutNick').textContent = c.about.nickname;
+        document.getElementById('aboutBio').textContent = c.about.bio;
+        document.getElementById('aboutQuote').textContent = `「${c.about.philosophy}」`;
+
+        const expEl = document.getElementById('aboutExp');
+        c.about.experience.forEach((item, i) => {
+          const li = document.createElement('li');
+          li.textContent = item;
+          li.className = `reveal reveal-delay-${Math.min(i + 1, 3)}`;
+          expEl.appendChild(li);
+        });
+
+        const servGrid = document.getElementById('servicesGrid');
+        c.services.forEach((s, i) => {
+          const div = document.createElement('div');
+          div.className = `service-item reveal reveal-delay-${Math.min(i + 1, 3)}`;
+          div.innerHTML = `<h3>${s.title}</h3><p>${s.description}</p>`;
+          servGrid.appendChild(div);
+        });
+
+        const storGrid = document.getElementById('storiesGrid');
+        c.successStories.forEach((s, i) => {
+          const div = document.createElement('div');
+          div.className = `story-item reveal reveal-delay-${Math.min(i + 1, 3)}`;
+          div.innerHTML = `<div class="story-result">${s.result}</div><div class="story-name">${s.name}</div><div class="story-quote">${s.quote}</div>`;
+          storGrid.appendChild(div);
+        });
+
+        document.getElementById('milkyName').textContent = c.milky.name;
+        document.getElementById('milkyDesc').textContent = c.milky.description;
+        if (c.milky.instagram) {
+          const link = document.createElement('a');
+          link.href = c.milky.instagram; link.target = '_blank';
+          link.textContent = `📷 ${c.milky.instagramId}`;
+          link.style.cssText = 'display:inline-block;margin-top:1rem;color:var(--gold);text-decoration:none;font-size:0.85rem;letter-spacing:1px;transition:opacity 0.3s;';
+          link.onmouseenter = () => link.style.opacity = '0.7';
+          link.onmouseleave = () => link.style.opacity = '1';
+          document.getElementById('milkyDesc').after(link);
+        }
+        if (c.milky.image) {
+          const img = new Image();
+          img.src = c.milky.image;
+          img.onload = () => {
+            const avatar = document.getElementById('milkyAvatar');
+            avatar.style.backgroundImage = `url(${c.milky.image})`;
+            avatar.style.backgroundSize = 'cover';
+            avatar.style.backgroundPosition = 'center';
+            avatar.textContent = '';
+          };
+        }
+
+        document.getElementById('contactCta').textContent = c.contact.cta;
+        const linksEl = document.getElementById('contactLinks');
+        if (c.contact.instagram) {
+          const a = document.createElement('a');
+          a.className = 'contact-link'; a.href = c.contact.instagram; a.target = '_blank';
+          a.textContent = `INSTAGRAM ${c.contact.instagramId}`;
+          linksEl.appendChild(a);
+        }
+        if (c.contact.line) {
+          const a = document.createElement('a');
+          a.className = 'contact-link'; a.href = '#';
+          a.textContent = `LINE ${c.contact.line}`;
+          a.onclick = (e) => {
+            e.preventDefault();
+            navigator.clipboard.writeText(c.contact.line).then(() => {
+              pageToast(`已複製 LINE ID: ${c.contact.line} 到剪貼簿`);
+            });
+          };
+          linksEl.appendChild(a);
+        }
+
+        document.getElementById('footer').textContent = c.footer.copyright;
+
+        // Init reveal after content loaded
+        initReveal();
+      } catch (err) { console.error(err); }
+    }
+
+    // === Scroll reveal ===
+    function initReveal() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+      document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    }
+
+    // === Nav scroll effect ===
+    window.addEventListener('scroll', () => {
+      const nav = document.getElementById('navbar');
+      nav.classList.toggle('scrolled', window.scrollY > 80);
+
+      // Parallax hero bg
+      const bg = document.getElementById('heroBg');
+      if (bg) bg.style.transform = `scale(1.1) translateY(${window.scrollY * 0.3}px)`;
+    });
+
+    // === BMR Calculator ===
+    function calculateBMR() {
+      const gender = document.getElementById('bmrGender').value;
+      const age = parseFloat(document.getElementById('bmrAge').value);
+      const height = parseFloat(document.getElementById('bmrHeight').value);
+      const weight = parseFloat(document.getElementById('bmrWeight').value);
+      const activity = parseFloat(document.getElementById('bmrActivity').value);
+      const goal = document.getElementById('bmrGoal').value;
+
+      if (!age || !height || !weight) { pageToast('請填寫完整資料'); return; }
+
+      // Mifflin-St Jeor
+      let bmr = 10 * weight + 6.25 * height - 5 * age;
+      bmr += gender === 'male' ? 5 : -161;
+
+      const tdee = Math.round(bmr * activity);
+      const targetCal = Math.round(goal === 'gain' ? tdee + 300 : tdee - 300);
+
+      // Macros
+      const ratios = goal === 'gain' ? { p: 0.3, f: 0.25, c: 0.45 } : { p: 0.35, f: 0.25, c: 0.4 };
+      const protein = Math.round(targetCal * ratios.p / 4);
+      const fat = Math.round(targetCal * ratios.f / 9);
+      const carbs = Math.round(targetCal * ratios.c / 4);
+
+      const cards = document.getElementById('bmrCards');
+      cards.innerHTML = `
+        <div class="bmr-result-card"><div class="bmr-val">${Math.round(bmr)}</div><div class="bmr-label">BMR (基礎代謝)</div></div>
+        <div class="bmr-result-card"><div class="bmr-val">${tdee}</div><div class="bmr-label">TDEE (每日消耗)</div></div>
+        <div class="bmr-result-card"><div class="bmr-val">${targetCal}</div><div class="bmr-label">建議攝取 (kcal)</div></div>
+        <div class="bmr-result-card"><div class="bmr-val">${protein}g</div><div class="bmr-label">蛋白質</div></div>
+        <div class="bmr-result-card"><div class="bmr-val">${fat}g</div><div class="bmr-label">脂肪</div></div>
+        <div class="bmr-result-card"><div class="bmr-val">${carbs}g</div><div class="bmr-label">碳水化合物</div></div>`;
+
+      // Dynamic CTA with projection
+      const diff = Math.abs(tdee - targetCal);
+      const ctaEl = document.getElementById('bmrCta');
+      if (diff > 0) {
+        const kgChange = (35 * diff / 7700).toFixed(1);
+        const futureWeight = goal === 'loss' ? (weight - parseFloat(kgChange)).toFixed(1) : (weight + parseFloat(kgChange)).toFixed(1);
+        const futureDate = new Date();
+        futureDate.setDate(futureDate.getDate() + 35);
+        const dateStr = `${futureDate.getFullYear()} 年 ${futureDate.getMonth() + 1} 月 ${futureDate.getDate()} 日`;
+        ctaEl.innerHTML = `
+          <p style="font-size:1.1rem;font-weight:300;margin-bottom:0.3rem">聯繫我，<span style="font-family:'Oswald',sans-serif;font-size:clamp(1.5rem,4vw,2.5rem);color:var(--gold);font-weight:300;letter-spacing:3px">5 週後</span></p>
+          <p style="font-size:0.85rem;color:var(--text-muted);font-weight:300;margin-bottom:1.5rem">${dateStr}</p>
+          <p style="font-family:'Oswald',sans-serif;font-size:1.1rem;font-weight:300;letter-spacing:2px;margin-bottom:0.3rem">你將會是</p>
+          <p style="font-family:'Oswald',sans-serif;font-size:clamp(2.5rem,6vw,4rem);color:var(--gold);font-weight:300;margin-bottom:1.5rem">${futureWeight} kg</p>
+          <a href="#contact">立即聯繫教練</a>`;
+      } else {
+        ctaEl.innerHTML = `<p>想更有效率地達成目標？</p><a href="#contact">立即聯繫教練</a>`;
+      }
+
+      const resultEl = document.getElementById('bmrResult');
+      resultEl.style.display = 'block';
+      resultEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    loadContent();
   </script>
 </body>
 </html>

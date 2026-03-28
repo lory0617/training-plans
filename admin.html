@@ -279,6 +279,38 @@
       .todo-card { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
       .purchase-card { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
     }
+
+    /* Guided Tour */
+    .tour-overlay {
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 300;
+    }
+    .tour-overlay.active { display: block; }
+    .tour-spotlight {
+      position: fixed; border: 2px solid var(--gold); border-radius: 8px;
+      box-shadow: 0 0 0 9999px rgba(0,0,0,0.7); transition: all 0.3s ease;
+      pointer-events: none;
+    }
+    .tour-tooltip {
+      position: fixed; background: var(--surface); border: 1px solid var(--gold);
+      border-radius: 12px; padding: 1.5rem; max-width: 360px; z-index: 301;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5); transition: all 0.3s ease;
+    }
+    .tour-tooltip h3 { font-family: 'Oswald', sans-serif; color: var(--gold); font-size: 1.1rem; margin-bottom: 0.5rem; }
+    .tour-tooltip p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1rem; }
+    .tour-step-count { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.75rem; }
+    .tour-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
+    .tour-btn { background: none; border: 1px solid var(--border); border-radius: 6px; color: var(--text); padding: 0.4rem 0.8rem; cursor: pointer; font-size: 0.85rem; font-family: 'Noto Sans TC', sans-serif; transition: all 0.15s; }
+    .tour-btn:hover { border-color: var(--gold); color: var(--gold); }
+    .tour-btn.primary { background: var(--gold); color: #000; border-color: var(--gold); }
+    .tour-btn.primary:hover { background: var(--gold-hover); }
+    .tour-trigger {
+      position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 50;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 50px;
+      padding: 0.6rem 1.2rem; color: var(--text-muted); font-size: 0.85rem;
+      cursor: pointer; font-family: 'Noto Sans TC', sans-serif;
+      transition: all 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .tour-trigger:hover { border-color: var(--gold); color: var(--gold); }
   </style>
 </head>
 <body>
@@ -368,7 +400,7 @@
           </div>
 
           <!-- Records (classes only, no weight logs) -->
-          <div class="records-header">
+          <div id="classRecordsHeader" class="records-header">
             <h3 style="font-family:'Oswald',sans-serif; font-size:1.3rem;">上課紀錄</h3>
             <button class="btn btn-gold btn-sm" onclick="showAddRecord()">+ 補登上課</button>
           </div>
@@ -515,6 +547,13 @@
       <button class="btn btn-gold" onclick="saveQuickWeight()">儲存</button>
     </div>
   </div></div>
+
+  <!-- Tour -->
+  <div id="tourOverlay" class="tour-overlay">
+    <div id="tourSpotlight" class="tour-spotlight"></div>
+    <div id="tourTooltip" class="tour-tooltip"></div>
+  </div>
+  <button id="tourTrigger" class="tour-trigger" onclick="startTour()" style="display:none">功能導覽</button>
 
   <!-- Toast -->
   <div id="toast" class="toast"></div>
@@ -1787,6 +1826,180 @@
         if (currentStudentId) loadStudentDetail(currentStudentId);
       } catch (err) { alert('儲存失敗：' + err.message); } finally { saving = false; }
     }
+    // ===== Guided Tour =====
+    const tourSteps = [
+      {
+        target: '.tab-bar',
+        title: '主選單',
+        text: '後台分為三大區塊：「學員列表」管理所有學員、「行程表」排課和確認完課、「金流」追蹤收入。',
+        tab: 'students',
+      },
+      {
+        target: '#studentGrid',
+        title: '學員列表',
+        text: '所有學員一覽。卡片上會顯示已上堂數和剩餘堂數。點擊學員卡片進入詳細頁面。',
+        tab: 'students',
+      },
+      {
+        target: '.section-header .btn-gold',
+        title: '新增學員',
+        text: '點此新增學員，填寫姓名、性別、身高體重、聯絡方式等基本資料。',
+        tab: 'students',
+      },
+      {
+        target: '.quick-actions',
+        title: '快捷操作',
+        text: '在學員頁面中，可以快速「預約上課」、「新增購課」或「記錄體重」。預約會出現在行程表，購課需要到金流確認收款。',
+        needDetail: true,
+      },
+      {
+        target: '#exerciseRefSection, .records-header',
+        title: '訓練重量參考',
+        text: '這裡會自動彙整每個動作最近一次的重量。點選動作可以產生純文字，方便複製傳給學員。',
+        needDetail: true,
+        fallbackTarget: '.records-header',
+      },
+      {
+        target: '#classRecordsHeader',
+        title: '上課紀錄與補登',
+        text: '所有完課紀錄會出現在這裡，包含訓練項目、重量、次數和組數。可以「補登上課」來補記過去的課程，也可以「編輯」已有的紀錄。',
+        needDetail: true,
+      },
+      {
+        target: '#tabSchedule',
+        title: '行程表 — 待確認完課',
+        text: '預約時間到了之後，會自動變成「待確認完課」。點擊「確認完課」可以同時記錄體重、訓練項目和課堂筆記。',
+        tab: 'schedule',
+      },
+      {
+        target: '#calendarView',
+        title: '行程表 — 日曆',
+        text: '用 7 天或 30 天的日曆檢視近期預約。直接點擊日期格子就可以快速新增預約。',
+        tab: 'schedule',
+      },
+      {
+        target: '#tabFinance',
+        title: '金流 — 總覽',
+        text: '追蹤收入狀況：「總收款」是已確認收到的錢，「已賺取」是完課後的實際收入，「待完成」是收了錢但還沒上完的課。',
+        tab: 'finance',
+      },
+      {
+        target: '#purchaseList',
+        title: '金流 — 購課確認',
+        text: '新增購課後預設為「待確認」。勾選 checkbox 確認收款後，才會計入收入和學員堂數。未確認的可以直接刪除。',
+        tab: 'finance',
+      },
+    ];
+
+    let tourCurrentStep = 0;
+    let tourActive = false;
+
+    function startTour() {
+      tourCurrentStep = 0;
+      tourActive = true;
+      // Start from students tab
+      const studentsTab = document.querySelector('.tab-btn[data-tab="students"]');
+      switchTab('students', studentsTab);
+      setTimeout(() => showTourStep(), 300);
+    }
+
+    function endTour() {
+      tourActive = false;
+      document.getElementById('tourOverlay').classList.remove('active');
+    }
+
+    function showTourStep() {
+      if (tourCurrentStep >= tourSteps.length) { endTour(); return; }
+
+      const step = tourSteps[tourCurrentStep];
+      const overlay = document.getElementById('tourOverlay');
+      const spotlight = document.getElementById('tourSpotlight');
+      const tooltip = document.getElementById('tourTooltip');
+
+      // Switch tab if needed
+      if (step.tab) {
+        const tabBtn = document.querySelector(`.tab-btn[data-tab="${step.tab}"]`);
+        switchTab(step.tab, tabBtn);
+      }
+
+      // If step needs student detail, find Johnson (or first student with data)
+      let needsDetailLoad = false;
+      if (step.needDetail && !document.getElementById('viewDetail').classList.contains('active')) {
+        const cards = document.querySelectorAll('.student-card');
+        let targetCard = null;
+        cards.forEach(card => {
+          if (card.querySelector('h3') && card.querySelector('h3').textContent === 'Johnson') targetCard = card;
+        });
+        if (!targetCard && cards.length) targetCard = cards[0];
+        if (targetCard) { targetCard.click(); needsDetailLoad = true; }
+      }
+
+      // Wait longer if we just triggered a detail load (Firestore queries)
+      const waitTime = needsDetailLoad ? 1500 : (step.tab ? 400 : 150);
+      setTimeout(() => {
+        let targetEl = null;
+
+        // Try primary target, then fallback
+        const targets = step.target.split(', ');
+        for (const sel of targets) {
+          targetEl = document.querySelector(sel);
+          if (targetEl && targetEl.offsetParent !== null) break;
+        }
+        if (step.fallbackTarget && (!targetEl || targetEl.offsetParent === null)) {
+          targetEl = document.querySelector(step.fallbackTarget);
+        }
+
+        if (!targetEl || targetEl.offsetParent === null) {
+          tourCurrentStep++;
+          showTourStep();
+          return;
+        }
+
+        // First scroll into view, then position after scroll completes
+        targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        setTimeout(() => {
+          overlay.classList.add('active');
+          const rect = targetEl.getBoundingClientRect();
+          const pad = 20;
+
+          spotlight.style.left = (rect.left - pad) + 'px';
+          spotlight.style.top = (rect.top - pad) + 'px';
+          spotlight.style.width = (rect.width + pad * 2) + 'px';
+          spotlight.style.height = (rect.height + pad * 2) + 'px';
+
+          const tooltipWidth = 360;
+          let tooltipLeft = rect.left;
+          let tooltipTop = rect.bottom + pad + 12;
+
+          if (tooltipTop + 200 > window.innerHeight) tooltipTop = rect.top - pad - 12 - 200;
+          if (tooltipLeft + tooltipWidth > window.innerWidth - 16) tooltipLeft = window.innerWidth - tooltipWidth - 16;
+          if (tooltipLeft < 16) tooltipLeft = 16;
+          if (tooltipTop < 16) tooltipTop = 16;
+
+          tooltip.style.left = tooltipLeft + 'px';
+          tooltip.style.top = tooltipTop + 'px';
+
+          const isFirst = tourCurrentStep === 0;
+          const isLast = tourCurrentStep === tourSteps.length - 1;
+
+          tooltip.innerHTML = `
+            <div class="tour-step-count">步驟 ${tourCurrentStep + 1} / ${tourSteps.length}</div>
+            <h3>${step.title}</h3>
+            <p>${step.text}</p>
+            <div class="tour-actions">
+              <button class="tour-btn" onclick="endTour()">結束導覽</button>
+              ${!isFirst ? '<button class="tour-btn" onclick="tourCurrentStep--;showTourStep()">上一步</button>' : ''}
+              <button class="tour-btn primary" onclick="tourCurrentStep++;showTourStep()">${isLast ? '完成' : '下一步'}</button>
+            </div>`;
+        }, 500);
+      }, waitTime);
+    }
+
+    // Show tour button after login
+    auth.onAuthStateChanged(user => {
+      document.getElementById('tourTrigger').style.display = user ? 'block' : 'none';
+    });
   </script>
 </body>
 </html>
