@@ -1739,13 +1739,22 @@
           studentPurchases[p.studentId].totalSessions += p.sessions || 0;
         });
 
+        // Compute used sessions per student from confirmed bookings
+        const usedByStudent = {};
+        const bookingSnap = await db.collection('bookings').get();
+        bookingSnap.forEach(doc => {
+          const b = doc.data();
+          if (b.status !== 'confirmed' || b.type === 'weight_log') return;
+          usedByStudent[b.studentId] = (usedByStudent[b.studentId] || 0) + 1;
+        });
+
         let totalEarned = 0;
         Object.keys(studentPurchases).forEach(sid => {
           const sp = studentPurchases[sid];
           const student = students[sid];
           if (student && sp.totalSessions > 0) {
             const avgPrice = sp.totalAmount / sp.totalSessions;
-            totalEarned += Math.min(student.usedSessions || 0, sp.totalSessions) * avgPrice;
+            totalEarned += Math.min(usedByStudent[sid] || 0, sp.totalSessions) * avgPrice;
           }
         });
 
