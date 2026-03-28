@@ -1315,7 +1315,7 @@
         await db.collection('bookings').add({
           studentId: currentStudentId,
           studentName: student ? student.name : '',
-          dateTime: new Date(`${date}T00:00`).toISOString(),
+          dateTime: `${date}T00:00:00.000Z`,
           status: 'confirmed',
           type: 'weight_log',
           weight,
@@ -1435,16 +1435,20 @@
         const snap = await db.collection('bookings').orderBy('dateTime', 'asc').get();
         const todos = [], upcoming = [], past = [];
 
+        const batch = db.batch();
+        let hasBatchUpdates = false;
         snap.forEach(doc => {
           const b = { id: doc.id, ...doc.data() };
           if (b.status === 'upcoming' && b.dateTime <= nowStr) {
-            db.collection('bookings').doc(doc.id).update({ status: 'pending' });
+            batch.update(doc.ref, { status: 'pending' });
+            hasBatchUpdates = true;
             b.status = 'pending';
           }
           if (b.status === 'pending') todos.push(b);
           else if (b.status === 'upcoming') upcoming.push(b);
           else past.push(b);
         });
+        if (hasBatchUpdates) await batch.commit();
 
         // Todos
         const todoC = document.getElementById('todoList');
@@ -1579,7 +1583,7 @@
       for (let i = 0; i < 7; i++) {
         const d = new Date(startDate);
         d.setDate(d.getDate() + i);
-        const dateKey = d.toISOString().split('T')[0];
+        const dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         const isToday = d.getTime() === today.getTime();
         const events = byDate[dateKey] || [];
 
@@ -1668,6 +1672,7 @@
       const time = document.getElementById('bTime').value;
       if (!studentId || !date || !time) { saving = false; alert('請填寫完整資料'); return; }
       const student = studentsCache.find(s => s.id === studentId);
+      if (!student) { saving = false; alert('找不到學生資料，請重新載入'); return; }
       try {
         await db.collection('bookings').add({
           studentId, studentName: student.name,
@@ -1824,6 +1829,7 @@
       const totalAmount = parseInt(document.getElementById('pAmount').value);
       if (!studentId || !sessions || !totalAmount) { saving = false; alert('請填寫完整資料'); return; }
       const student = studentsCache.find(s => s.id === studentId);
+      if (!student) { saving = false; alert('找不到學生資料，請重新載入'); return; }
       try {
         await db.collection('purchases').add({
           studentId, studentName: student.name,
