@@ -1,0 +1,2020 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lory Fitness — 教練後台</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #1a1a1a;
+      --surface2: #252525;
+      --gold: #f5a623;
+      --gold-hover: #ffc857;
+      --text: #ffffff;
+      --text-muted: #999999;
+      --danger: #e74c3c;
+      --success: #2ecc71;
+      --border: #333333;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #0a0a0a 100%);
+      color: var(--text); min-height: 100vh;
+    }
+    h1, h2, h3 { font-family: 'Oswald', sans-serif; letter-spacing: 1px; }
+
+    /* Login */
+    #loginScreen { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem; }
+    .login-box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 3rem; width: 100%; max-width: 400px; text-align: center; }
+    .login-box h1 { font-size: 2rem; color: var(--gold); margin-bottom: 0.5rem; }
+    .login-box p { color: var(--text-muted); margin-bottom: 2rem; }
+
+    /* Form */
+    .form-group { margin-bottom: 1rem; text-align: left; }
+    .form-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.3rem; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; padding: 0.75rem 1rem; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text); font-size: 1rem; font-family: 'Noto Sans TC', sans-serif;
+      outline: none; transition: border-color 0.2s;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--gold); }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+
+    /* Buttons */
+    .btn { display: inline-block; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; font-size: 1rem; font-family: 'Noto Sans TC', sans-serif; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+    .btn-gold { background: var(--gold); color: #000; }
+    .btn-gold:hover { background: var(--gold-hover); }
+    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-danger:hover { opacity: 0.8; }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-success:hover { opacity: 0.8; }
+    .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.85rem; }
+    .btn-full { width: 100%; }
+    .error-msg { color: var(--danger); font-size: 0.85rem; margin-top: 0.5rem; }
+
+    /* Dashboard */
+    #dashboard { display: none; }
+    .topbar { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; background: var(--surface); border-bottom: 1px solid var(--border); }
+    .topbar h2 { font-size: 1.4rem; color: var(--gold); }
+
+    /* Tabs */
+    .tab-bar { display: flex; gap: 0; background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 2rem; }
+    .tab-btn { padding: 0.8rem 1.5rem; background: none; border: none; border-bottom: 3px solid transparent; color: var(--text-muted); font-size: 0.95rem; font-family: 'Noto Sans TC', sans-serif; cursor: pointer; transition: all 0.2s; }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); font-weight: 500; }
+
+    .main-content { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem; }
+    .section-header h2 { font-size: 1.6rem; }
+    .view { display: none; }
+    .view.active { display: block; }
+    .empty-state { text-align: center; padding: 3rem; color: var(--text-muted); }
+    .back-link { color: var(--gold); cursor: pointer; font-size: 0.9rem; margin-bottom: 1.5rem; display: inline-block; }
+    .back-link:hover { text-decoration: underline; }
+
+    /* Student Cards */
+    .student-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; }
+    .student-card { background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01)); border: none; border-radius: 12px; padding: 1.5rem; cursor: pointer; transition: all 0.2s; }
+    .student-card:hover { background: linear-gradient(145deg, rgba(245,166,35,0.1), rgba(255,255,255,0.03)); transform: translateY(-2px); }
+    .student-card h3 { font-size: 1.2rem; margin-bottom: 0.5rem; }
+    .student-card .meta { color: var(--text-muted); font-size: 0.85rem; line-height: 1.6; }
+    .student-card .sessions { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 0.85rem; }
+    .sessions .remaining { color: var(--gold); font-weight: 700; }
+
+    /* Student Detail */
+    .detail-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; }
+    .detail-header h2 { font-size: 1.8rem; }
+    .detail-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .detail-section { background: linear-gradient(145deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01)); border-radius: 16px; padding: 1.5rem 2rem; margin-bottom: 1.5rem; }
+    .detail-section-title { font-family: 'Oswald', sans-serif; font-size: 1rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1rem; }
+    .info-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.2rem; }
+    .info-item .label { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.2rem; }
+    .info-item .value { font-size: 1.1rem; font-weight: 500; }
+    .info-item .value.gold { color: var(--gold); }
+    .session-highlight { display: flex; align-items: center; gap: 2rem; }
+    .session-number { font-family: 'Oswald', sans-serif; font-size: 3rem; font-weight: 700; color: var(--gold); line-height: 1; }
+    .session-label { font-size: 0.9rem; color: var(--text-muted); }
+    .session-sub { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.3rem; }
+
+    /* Quick Actions in Detail */
+    .quick-actions { display: flex; gap: 0.75rem; margin-bottom: 2rem; flex-wrap: wrap; }
+
+    /* Weight Chart */
+    .chart-container { margin-bottom: 2rem; }
+    .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+    .chart-header h3 { font-family: 'Oswald', sans-serif; font-size: 1.3rem; }
+    .weight-change { font-size: 0.9rem; font-weight: 600; }
+    .weight-change.down { color: var(--success); }
+    .weight-change.up { color: var(--danger); }
+    #weightChart { width: 100%; height: 200px; border-radius: 12px; background: linear-gradient(145deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01)); }
+
+    /* Records */
+    .records-header { display: flex; justify-content: space-between; align-items: center; margin: 2rem 0 1rem; }
+    .record-card { background: linear-gradient(145deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01)); border: none; border-radius: 8px; padding: 1.2rem; margin-bottom: 0.75rem; }
+    .record-card .record-date { color: var(--gold); font-weight: 600; font-family: 'Oswald', sans-serif; font-size: 1rem; margin-bottom: 0.5rem; }
+    .record-card .record-stats { display: flex; gap: 1.5rem; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .record-card .record-notes { font-size: 0.9rem; line-height: 1.5; color: var(--text); }
+
+    /* Schedule */
+    .todo-section { margin-bottom: 2.5rem; }
+    .todo-card { background: linear-gradient(145deg, rgba(245,166,35,0.08), rgba(255,255,255,0.02)); border-left: 3px solid var(--gold); border-radius: 8px; padding: 1.2rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; }
+    .todo-info h3 { font-size: 1rem; margin-bottom: 0.25rem; }
+    .todo-info .todo-time { color: var(--text-muted); font-size: 0.85rem; }
+    .todo-actions { display: flex; gap: 0.5rem; }
+    .booking-card { background: linear-gradient(145deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01)); border-radius: 8px; padding: 1rem 1.2rem; margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
+    .booking-info { font-size: 0.9rem; }
+    .booking-info strong { color: var(--text); }
+    .booking-info .booking-time { color: var(--text-muted); font-size: 0.85rem; }
+    .booking-status { font-size: 0.8rem; padding: 0.2rem 0.6rem; border-radius: 4px; }
+    .booking-status.confirmed { background: rgba(46,204,113,0.2); color: var(--success); }
+    .booking-status.cancelled { background: rgba(231,76,60,0.2); color: var(--danger); }
+
+    /* Finance */
+    .finance-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .finance-card { background: linear-gradient(145deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01)); border-radius: 12px; padding: 1.5rem; }
+    .finance-card .fc-label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; }
+    .finance-card .fc-value { font-family: 'Oswald', sans-serif; font-size: 2rem; font-weight: 700; }
+    .finance-card .fc-value.gold { color: var(--gold); }
+    .finance-card .fc-value.green { color: var(--success); }
+    .finance-card .fc-sub { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.3rem; }
+    .purchase-card { background: linear-gradient(145deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01)); border-radius: 8px; padding: 1.2rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; }
+    .purchase-info .purchase-student { font-weight: 500; margin-bottom: 0.2rem; }
+    .purchase-info .purchase-detail { font-size: 0.85rem; color: var(--text-muted); }
+    .purchase-amount { font-family: 'Oswald', sans-serif; font-size: 1.3rem; color: var(--gold); font-weight: 600; }
+
+    /* Modal */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; padding: 2rem; }
+    .modal-overlay.show { display: flex; }
+    .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 2rem; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; }
+    .modal h2 { font-size: 1.4rem; color: var(--gold); margin-bottom: 1.5rem; }
+    .modal-actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; justify-content: flex-end; }
+
+    /* Calendar */
+    .cal-toggle { display: flex; background: var(--surface2); border-radius: 6px; overflow: hidden; }
+    .cal-toggle-btn { background: none; border: none; color: var(--text-muted); padding: 0.4rem 0.8rem; font-size: 0.8rem; font-family: 'Noto Sans TC', sans-serif; cursor: pointer; transition: all 0.15s; }
+    .cal-toggle-btn.active { background: var(--gold); color: #000; }
+    .cal-week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.5rem; margin-bottom: 1rem; }
+    .cal-month { display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.25rem; margin-bottom: 1rem; }
+    .cal-header { font-size: 0.7rem; color: var(--text-muted); text-align: center; padding: 0.3rem; font-weight: 500; text-transform: uppercase; }
+    .cal-day {
+      background: linear-gradient(145deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      border-radius: 8px; padding: 0.5rem; min-height: 80px; position: relative;
+    }
+    .cal-month .cal-day { min-height: 60px; padding: 0.4rem; }
+    .cal-day.today { border: 1px solid var(--gold); }
+    .cal-day.empty { background: none; min-height: 0; }
+    .cal-day-num { font-family: 'Oswald', sans-serif; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.3rem; }
+    .cal-day.today .cal-day-num { color: var(--gold); }
+    .cal-day-weekday { font-size: 0.65rem; color: var(--text-muted); }
+    .cal-event {
+      background: rgba(245,166,35,0.15); border-left: 2px solid var(--gold);
+      border-radius: 4px; padding: 0.2rem 0.4rem; margin-bottom: 0.2rem;
+      font-size: 0.7rem; color: var(--text); cursor: pointer; transition: all 0.15s;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .cal-event:hover { background: rgba(245,166,35,0.3); }
+    .cal-event .cal-event-time { color: var(--gold); font-family: 'Oswald', sans-serif; }
+    .cal-nav { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+    .cal-nav-btn { background: none; border: 1px solid var(--border); border-radius: 6px; color: var(--text-muted); padding: 0.3rem 0.6rem; cursor: pointer; font-size: 0.85rem; }
+    .cal-nav-btn:hover { border-color: var(--gold); color: var(--gold); }
+    .cal-nav-title { font-family: 'Oswald', sans-serif; font-size: 1.1rem; color: var(--text); }
+
+    /* Exercise Entry */
+    .exercise-entry { margin-top: 1rem; }
+    .exercise-entry-title { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .exercise-row { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; align-items: center; flex-wrap: wrap; }
+    .exercise-row input { flex: 1; padding: 0.5rem 0.75rem; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 0.9rem; font-family: 'Noto Sans TC', sans-serif; outline: none; }
+    .exercise-row input:focus { border-color: var(--gold); }
+    .exercise-row input.ex-name { flex: 1 1 100%; min-width: 0; }
+    .exercise-row input.ex-weight { flex: 1 1 60px; min-width: 60px; }
+    .exercise-row input.ex-reps { flex: 1 1 50px; min-width: 50px; }
+    .exercise-row input.ex-sets { flex: 1 1 50px; min-width: 50px; }
+    .exercise-row .ex-remove { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 1.1rem; padding: 0.3rem; opacity: 0.6; }
+    .exercise-row .ex-remove:hover { opacity: 1; }
+    .exercise-add-btn { background: none; border: 1px dashed var(--border); border-radius: 6px; color: var(--text-muted); padding: 0.5rem; width: 100%; cursor: pointer; font-size: 0.85rem; font-family: 'Noto Sans TC', sans-serif; transition: all 0.2s; }
+    .exercise-add-btn:hover { border-color: var(--gold); color: var(--gold); }
+    .exercise-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.6rem; }
+    .exercise-chip { background: var(--surface2); border: 1px solid var(--border); border-radius: 16px; padding: 0.25rem 0.7rem; font-size: 0.8rem; color: var(--text-muted); cursor: pointer; transition: all 0.15s; font-family: 'Noto Sans TC', sans-serif; }
+    .exercise-chip:hover { border-color: var(--gold); color: var(--gold); }
+
+    /* Exercise Picker (folder style) */
+    .exercise-picker { margin-bottom: 0.75rem; }
+    .exercise-picker-toggle { background: none; border: 1px solid var(--border); border-radius: 8px; color: var(--gold); padding: 0.5rem 1rem; cursor: pointer; font-size: 0.85rem; font-family: 'Noto Sans TC', sans-serif; transition: all 0.2s; width: 100%; text-align: left; display: flex; justify-content: space-between; align-items: center; }
+    .exercise-picker-toggle:hover { border-color: var(--gold); }
+    .exercise-picker-toggle .arrow { transition: transform 0.2s; }
+    .exercise-picker-toggle.open .arrow { transform: rotate(180deg); }
+    .exercise-picker-body { display: none; margin-top: 0.5rem; background: var(--surface2); border-radius: 8px; padding: 0.75rem; }
+    .exercise-picker-body.open { display: block; }
+    .exercise-cat-tabs { display: flex; gap: 0.4rem; margin-bottom: 0.6rem; flex-wrap: wrap; }
+    .exercise-cat-tab { background: none; border: 1px solid var(--border); border-radius: 6px; color: var(--text-muted); padding: 0.3rem 0.8rem; cursor: pointer; font-size: 0.8rem; font-family: 'Noto Sans TC', sans-serif; transition: all 0.15s; }
+    .exercise-cat-tab:hover { border-color: var(--gold); color: var(--gold); }
+    .exercise-cat-tab.active { background: var(--gold); color: #000; border-color: var(--gold); }
+    .exercise-cat-items { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .exercise-cat-item { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 16px; padding: 0.3rem 0.8rem; font-size: 0.8rem; color: var(--text); cursor: pointer; font-family: 'Noto Sans TC', sans-serif; transition: all 0.15s; }
+    .exercise-cat-item:hover { border-color: var(--gold); color: var(--gold); background: rgba(245,166,35,0.1); }
+    .exercise-suggest { position: absolute; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; max-height: 150px; overflow-y: auto; z-index: 10; width: 100%; }
+    .exercise-suggest-item { padding: 0.4rem 0.75rem; cursor: pointer; font-size: 0.85rem; color: var(--text-muted); }
+    .exercise-suggest-item:hover { background: var(--surface2); color: var(--gold); }
+
+    /* Exercise Reference in Detail */
+    .exercise-ref-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 0.5rem; }
+    .exercise-ref-item { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 1rem; background: rgba(255,255,255,0.02); border-radius: 6px; cursor: pointer; transition: all 0.15s; user-select: none; }
+    .exercise-ref-item:hover { background: rgba(255,255,255,0.05); }
+    .exercise-ref-item.selected { background: rgba(245,166,35,0.12); border: 1px solid var(--gold); }
+    .exercise-ref-item .ex-ref-name { font-size: 0.9rem; color: var(--text); }
+    .exercise-ref-item .ex-ref-weight { font-size: 0.9rem; color: var(--gold); font-weight: 600; font-family: 'Oswald', sans-serif; }
+    .exercise-ref-output { margin-top: 1rem; }
+    .exercise-ref-textarea { width: 100%; min-height: 80px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 0.85rem; font-family: 'Noto Sans TC', monospace; padding: 0.75rem; resize: vertical; outline: none; }
+    .exercise-ref-textarea:focus { border-color: var(--gold); }
+    .exercise-ref-actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+    .exercise-ref-actions .btn-sm { font-size: 0.8rem; }
+
+    /* Exercise in Record Card */
+    .record-exercises { margin-top: 0.5rem; }
+    .record-exercises .re-item { font-size: 0.85rem; color: var(--text-muted); padding: 0.15rem 0; }
+    .record-exercises .re-item .re-weight { color: var(--gold); }
+    .record-exercises .re-item .re-sets { color: var(--text-muted); margin-left: 0.3rem; }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px);
+      background: var(--surface); border: 1px solid var(--gold); border-radius: 8px;
+      padding: 0.8rem 1.5rem; color: var(--gold); font-weight: 500; font-size: 0.9rem;
+      z-index: 200; opacity: 0; transition: all 0.3s ease;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+    /* Todo Badge */
+    .tab-btn { position: relative; }
+    .todo-badge {
+      position: absolute; top: 6px; right: 4px;
+      background: var(--danger); color: #fff; font-size: 0.65rem; font-weight: 700;
+      width: 18px; height: 18px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Danger zone */
+    .danger-zone {
+      margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid rgba(231,76,60,0.2);
+    }
+    .danger-zone-label { font-size: 0.8rem; color: var(--danger); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .topbar { padding: 1rem; }
+      .tab-bar { padding: 0 1rem; overflow-x: auto; }
+      .tab-btn { padding: 0.8rem 1rem; font-size: 0.85rem; white-space: nowrap; }
+      .main-content { padding: 1rem; }
+      .detail-header { flex-direction: column; gap: 1rem; }
+      .info-grid { grid-template-columns: 1fr 1fr; }
+      .student-grid { grid-template-columns: 1fr; }
+      .finance-cards { grid-template-columns: 1fr 1fr; }
+      .modal { margin: 1rem; }
+      .todo-card { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+      .purchase-card { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+    }
+
+    /* Guided Tour */
+    .tour-overlay {
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 300;
+    }
+    .tour-overlay.active { display: block; }
+    .tour-spotlight {
+      position: fixed; border: 2px solid var(--gold); border-radius: 8px;
+      box-shadow: 0 0 0 9999px rgba(0,0,0,0.7); transition: all 0.3s ease;
+      pointer-events: none;
+    }
+    .tour-tooltip {
+      position: fixed; background: var(--surface); border: 1px solid var(--gold);
+      border-radius: 12px; padding: 1.5rem; max-width: 360px; z-index: 301;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5); transition: all 0.3s ease;
+    }
+    .tour-tooltip h3 { font-family: 'Oswald', sans-serif; color: var(--gold); font-size: 1.1rem; margin-bottom: 0.5rem; }
+    .tour-tooltip p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1rem; }
+    .tour-step-count { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.75rem; }
+    .tour-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
+    .tour-btn { background: none; border: 1px solid var(--border); border-radius: 6px; color: var(--text); padding: 0.4rem 0.8rem; cursor: pointer; font-size: 0.85rem; font-family: 'Noto Sans TC', sans-serif; transition: all 0.15s; }
+    .tour-btn:hover { border-color: var(--gold); color: var(--gold); }
+    .tour-btn.primary { background: var(--gold); color: #000; border-color: var(--gold); }
+    .tour-btn.primary:hover { background: var(--gold-hover); }
+    .tour-trigger {
+      position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 50;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 50px;
+      padding: 0.6rem 1.2rem; color: var(--text-muted); font-size: 0.85rem;
+      cursor: pointer; font-family: 'Noto Sans TC', sans-serif;
+      transition: all 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .tour-trigger:hover { border-color: var(--gold); color: var(--gold); }
+  </style>
+</head>
+<body>
+
+  <!-- Login -->
+  <div id="loginScreen">
+    <div class="login-box">
+      <h1>LORY FITNESS</h1>
+      <p>教練後台管理系統</p>
+      <div class="form-group"><label>Email</label><input type="email" id="loginEmail" placeholder="請輸入 Email"></div>
+      <div class="form-group"><label>密碼</label><input type="password" id="loginPassword" placeholder="請輸入密碼"></div>
+      <div id="loginError" class="error-msg"></div>
+      <button class="btn btn-gold btn-full" style="margin-top:1rem" onclick="handleLogin()">登入</button>
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="dashboard">
+    <div class="topbar">
+      <a href="index.html" style="text-decoration:none"><h2>LORY FITNESS</h2></a>
+      <button class="btn btn-outline btn-sm" onclick="handleLogout()">登出</button>
+    </div>
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="students" onclick="switchTab('students', this)">學員列表</button>
+      <button class="tab-btn" data-tab="schedule" onclick="switchTab('schedule', this)">行程表</button>
+      <button class="tab-btn" data-tab="finance" onclick="switchTab('finance', this)">金流</button>
+    </div>
+    <div class="main-content">
+
+      <!-- TAB: Students -->
+      <div id="tabStudents" class="view active">
+        <div id="viewList" class="view active">
+          <div class="section-header">
+            <h2>學員列表</h2>
+            <button class="btn btn-gold" onclick="showAddStudent()">+ 新增學員</button>
+          </div>
+          <div id="studentGrid" class="student-grid"><div class="empty-state">載入中...</div></div>
+        </div>
+        <div id="viewDetail" class="view">
+          <span class="back-link" onclick="showList()">← 返回學員列表</span>
+          <div class="detail-header">
+            <h2 id="detailName"></h2>
+            <div class="detail-actions">
+              <button class="btn btn-outline btn-sm" onclick="showEditStudent()">編輯資料</button>
+            </div>
+          </div>
+          <div id="detailInfo"></div>
+
+          <!-- Exercise Reference (right after course info) -->
+          <div id="exerciseRefSection" class="detail-section" style="display:none">
+            <div class="detail-section-title">訓練重量參考（最近一次）</div>
+            <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.5rem">點選動作來產生文字</div>
+            <div id="exerciseRefGrid" class="exercise-ref-grid"></div>
+            <div id="exerciseRefOutput" class="exercise-ref-output" style="display:none">
+              <textarea id="exerciseRefText" class="exercise-ref-textarea" readonly></textarea>
+              <div class="exercise-ref-actions">
+                <button class="btn btn-gold btn-sm" onclick="copyExerciseRef()">複製</button>
+                <button class="btn btn-outline btn-sm" onclick="selectAllExerciseRef()">全選</button>
+                <button class="btn btn-outline btn-sm" onclick="clearExerciseRef()">清除</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="quick-actions">
+            <button class="btn btn-gold btn-sm" onclick="showBookingForStudent()">+ 預約上課</button>
+            <button class="btn btn-outline btn-sm" onclick="showPurchaseForStudent()">+ 新增購課</button>
+            <button class="btn btn-outline btn-sm" onclick="showQuickWeight()">+ 記錄體重</button>
+          </div>
+
+          <!-- Weight Chart + Weight Logs -->
+          <div id="weightChartSection" class="chart-container" style="display:none">
+            <div class="chart-header">
+              <h3>體重變化</h3>
+              <span id="weightChangeLabel" class="weight-change"></span>
+            </div>
+            <canvas id="weightChart"></canvas>
+            <div id="weightLogsList" style="margin-top:1rem"></div>
+          </div>
+
+          <!-- Upcoming bookings for this student -->
+          <div id="studentUpcomingSection" style="display:none">
+            <div class="records-header">
+              <h3 style="font-family:'Oswald',sans-serif; font-size:1.3rem;">即將到來</h3>
+            </div>
+            <div id="studentUpcomingList"></div>
+          </div>
+
+          <!-- Records (classes only, no weight logs) -->
+          <div id="classRecordsHeader" class="records-header">
+            <h3 style="font-family:'Oswald',sans-serif; font-size:1.3rem;">上課紀錄</h3>
+            <button class="btn btn-gold btn-sm" onclick="showAddRecord()">+ 補登上課</button>
+          </div>
+          <div id="recordsList"></div>
+
+          <!-- Danger Zone -->
+          <div class="danger-zone">
+            <div class="danger-zone-label">危險操作</div>
+            <button class="btn btn-danger btn-sm" onclick="deleteStudent()">刪除此學員</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: Schedule -->
+      <div id="tabSchedule" class="view">
+        <div class="todo-section">
+          <div class="section-header"><h2>待確認完課</h2></div>
+          <div id="todoList"><div class="empty-state">沒有待確認的課程</div></div>
+        </div>
+        <div class="section-header">
+          <h2>近期預約</h2>
+          <div style="display:flex;gap:0.5rem;align-items:center">
+            <div class="cal-toggle">
+              <button class="cal-toggle-btn active" onclick="setCalView(7, this)">7 天</button>
+              <button class="cal-toggle-btn" onclick="setCalView(30, this)">30 天</button>
+            </div>
+            <button class="btn btn-gold btn-sm" onclick="showAddBooking()">+ 新增預約</button>
+          </div>
+        </div>
+        <div id="calendarView"></div>
+        <h3 style="font-family:'Oswald',sans-serif; font-size:1.2rem; color:var(--text-muted); margin:1.5rem 0 1rem;">預約列表</h3>
+        <div id="upcomingBookings"></div>
+        <div style="margin-top:2rem">
+          <h3 style="font-family:'Oswald',sans-serif; font-size:1.2rem; color:var(--text-muted); margin-bottom:1rem;">歷史紀錄</h3>
+          <div id="pastBookings"></div>
+        </div>
+      </div>
+
+      <!-- TAB: Finance -->
+      <div id="tabFinance" class="view">
+        <div class="section-header">
+          <h2>金流總覽</h2>
+          <button class="btn btn-gold" onclick="showAddPurchase()">+ 新增購課</button>
+        </div>
+        <div id="financeCards" class="finance-cards"></div>
+        <h3 style="font-family:'Oswald',sans-serif; font-size:1.2rem; margin-bottom:1rem;">購課紀錄</h3>
+        <div id="purchaseList"><div class="empty-state">載入中...</div></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modals -->
+
+  <!-- Student Modal -->
+  <div id="studentModal" class="modal-overlay"><div class="modal">
+    <h2 id="studentModalTitle">新增學員</h2>
+    <div class="form-group"><label>姓名 *</label><input type="text" id="sName" placeholder="學員姓名"></div>
+    <div class="form-group"><label>性別</label><select id="sGender"><option value="male">男性</option><option value="female">女性</option></select></div>
+    <div class="form-group"><label>身高 (cm)</label><input type="number" id="sHeight" placeholder="170"></div>
+    <div class="form-group"><label>體重 (kg)</label><input type="number" id="sWeight" placeholder="70"></div>
+    <div class="form-group"><label>年齡</label><input type="number" id="sAge" placeholder="25"></div>
+    <div class="form-group"><label>聯絡方式（LINE / 電話）</label><input type="text" id="sContact" placeholder="LINE ID 或電話"></div>
+    <div class="form-group"><label>開始上課日期</label><input type="date" id="sStartDate"></div>
+    <div class="form-group"><label>備註</label><textarea id="sMemo" placeholder="怎麼認識的、備註事項..."></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('studentModal')">取消</button>
+      <button class="btn btn-gold" onclick="saveStudent()">儲存</button>
+    </div>
+  </div></div>
+
+  <!-- Record Modal (manual add = confirmed booking) -->
+  <div id="recordModal" class="modal-overlay"><div class="modal">
+    <h2 id="recordModalTitle">補登上課</h2>
+    <div class="form-group"><label>上課日期 *</label><input type="date" id="rDate"></div>
+    <div class="form-group"><label>時間</label><input type="time" id="rTime" value="10:00"></div>
+    <div class="form-group"><label>體重 (kg)</label><input type="number" step="0.1" id="rWeight" placeholder="選填"></div>
+    <div class="form-group"><label>體脂率 (%)</label><input type="number" step="0.1" id="rBodyFat" placeholder="選填"></div>
+    <div class="form-group"><label>課堂筆記</label><textarea id="rNotes" placeholder="記錄學員狀況、聊天內容..."></textarea></div>
+    <div class="exercise-entry">
+      <div class="exercise-entry-title">訓練項目</div>
+      <div id="rExercisePicker" class="exercise-picker"></div>
+      <div id="rExercises"></div>
+      <button type="button" class="exercise-add-btn" onclick="addExerciseRow('rExercises')">+ 新增動作</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('recordModal')">取消</button>
+      <button class="btn btn-gold" onclick="saveRecord()">儲存</button>
+    </div>
+  </div></div>
+
+  <!-- Booking Modal -->
+  <div id="bookingModal" class="modal-overlay"><div class="modal">
+    <h2>新增預約</h2>
+    <div class="form-group"><label>學員 *</label><select id="bStudent"></select></div>
+    <div class="form-group"><label>日期 *</label><input type="date" id="bDate"></div>
+    <div class="form-group"><label>時間 *</label><input type="time" id="bTime" value="10:00"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('bookingModal')">取消</button>
+      <button class="btn btn-gold" onclick="saveBooking()">儲存</button>
+    </div>
+  </div></div>
+
+  <!-- Purchase Modal -->
+  <div id="purchaseModal" class="modal-overlay"><div class="modal">
+    <h2>新增購課紀錄</h2>
+    <div class="form-group"><label>學員 *</label><select id="pStudent"></select></div>
+    <div class="form-group"><label>購課日期</label><input type="date" id="pDate"></div>
+    <div class="form-group"><label>購買堂數 *</label><input type="number" id="pSessions" placeholder="10"></div>
+    <div class="form-group"><label>付款金額 (元) *</label><input type="number" id="pAmount" placeholder="12000"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('purchaseModal')">取消</button>
+      <button class="btn btn-gold" onclick="savePurchase()">儲存</button>
+    </div>
+  </div></div>
+
+  <!-- Todo Confirm Modal -->
+  <div id="todoConfirmModal" class="modal-overlay"><div class="modal">
+    <h2>確認完課</h2>
+    <p style="color:var(--text-muted); margin-bottom:1rem;" id="todoConfirmText"></p>
+    <div class="form-group"><label>體重 (kg)</label><input type="number" step="0.1" id="tcWeight" placeholder="選填"></div>
+    <div class="form-group"><label>體脂率 (%)</label><input type="number" step="0.1" id="tcBodyFat" placeholder="選填"></div>
+    <div class="form-group"><label>課堂筆記</label><textarea id="tcNotes" placeholder="記錄學員狀況、聊天內容..."></textarea></div>
+    <div class="exercise-entry">
+      <div class="exercise-entry-title">訓練項目</div>
+      <div id="tcExercisePicker" class="exercise-picker"></div>
+      <div id="tcExercises"></div>
+      <button type="button" class="exercise-add-btn" onclick="addExerciseRow('tcExercises')">+ 新增動作</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('todoConfirmModal')">取消</button>
+      <button class="btn btn-gold" onclick="confirmTodo()">確認完課</button>
+    </div>
+  </div></div>
+
+  <!-- Quick Weight Modal -->
+  <div id="weightModal" class="modal-overlay"><div class="modal">
+    <h2>記錄體重</h2>
+    <div class="form-group"><label>日期</label><input type="date" id="qwDate"></div>
+    <div class="form-group"><label>體重 (kg) *</label><input type="number" step="0.1" id="qwWeight" placeholder="70.5"></div>
+    <div class="form-group"><label>體脂率 (%)</label><input type="number" step="0.1" id="qwBodyFat" placeholder="選填"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('weightModal')">取消</button>
+      <button class="btn btn-gold" onclick="saveQuickWeight()">儲存</button>
+    </div>
+  </div></div>
+
+  <!-- Tour -->
+  <div id="tourOverlay" class="tour-overlay">
+    <div id="tourSpotlight" class="tour-spotlight"></div>
+    <div id="tourTooltip" class="tour-tooltip"></div>
+  </div>
+  <button id="tourTrigger" class="tour-trigger" onclick="startTour()" style="display:none">功能導覽</button>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
+
+  <script>
+    // ===== State =====
+    let currentStudentId = null;
+    let editingStudentId = null;
+    let confirmingBooking = null;
+    let studentsCache = [];
+    let saving = false;
+    let editingRecordId = null;
+
+    // ===== Helpers =====
+    function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+    function openModal(id) { document.getElementById(id).classList.add('show'); }
+    function formatMoney(n) { return 'NT$ ' + (n || 0).toLocaleString(); }
+    function todayStr() { return new Date().toISOString().split('T')[0]; }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2500);
+    }
+
+    async function updateTodoBadge() {
+      try {
+        const nowStr = new Date().toISOString();
+        const snap = await db.collection('bookings')
+          .where('status', 'in', ['pending', 'upcoming']).get();
+        let count = 0;
+        snap.forEach(doc => {
+          const b = doc.data();
+          if (b.status === 'pending' || (b.status === 'upcoming' && b.dateTime <= nowStr)) count++;
+        });
+        const tabBtn = document.querySelector('.tab-btn[data-tab="schedule"]');
+        const existing = tabBtn.querySelector('.todo-badge');
+        if (existing) existing.remove();
+        if (count > 0) {
+          const badge = document.createElement('span');
+          badge.className = 'todo-badge';
+          badge.textContent = count;
+          tabBtn.appendChild(badge);
+        }
+      } catch (err) { console.error(err); }
+    }
+
+    // ===== Auth =====
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+        loadStudentsCache().then(() => loadStudents());
+        updateTodoBadge();
+        loadExerciseHistory();
+        loadCustomExercises();
+      } else {
+        document.getElementById('loginScreen').style.display = 'flex';
+        document.getElementById('dashboard').style.display = 'none';
+      }
+    });
+
+    function handleLogin() {
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const errorEl = document.getElementById('loginError');
+      errorEl.textContent = '';
+      if (!email || !password) { errorEl.textContent = '請輸入 Email 和密碼'; return; }
+      auth.signInWithEmailAndPassword(email, password)
+        .catch(() => { errorEl.textContent = '登入失敗：帳號或密碼錯誤'; });
+    }
+    document.getElementById('loginPassword').addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); });
+    function handleLogout() { auth.signOut(); }
+
+    // ===== Tabs =====
+    function switchTab(tab, btn) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.main-content > .view').forEach(v => v.classList.remove('active'));
+      btn.classList.add('active');
+      if (tab === 'students') { document.getElementById('tabStudents').classList.add('active'); showList(); }
+      else if (tab === 'schedule') { document.getElementById('tabSchedule').classList.add('active'); loadSchedule(); }
+      else if (tab === 'finance') { document.getElementById('tabFinance').classList.add('active'); loadFinance(); }
+    }
+
+    // ===== Navigation =====
+    function showList() {
+      document.getElementById('viewList').classList.add('active');
+      document.getElementById('viewDetail').classList.remove('active');
+      currentStudentId = null;
+      loadStudents();
+    }
+    function showDetail(id) {
+      currentStudentId = id;
+      document.getElementById('viewList').classList.remove('active');
+      document.getElementById('viewDetail').classList.add('active');
+      loadStudentDetail(id);
+    }
+
+    // ===== Students Cache =====
+    async function loadStudentsCache() {
+      try {
+        const snap = await db.collection('students').orderBy('createdAt', 'desc').get();
+        studentsCache = [];
+        snap.forEach(doc => studentsCache.push({ id: doc.id, ...doc.data() }));
+      } catch (err) { console.error(err); }
+    }
+    function populateStudentSelect(selectId, preselectedId) {
+      const sel = document.getElementById(selectId);
+      sel.innerHTML = '<option value="" disabled selected>選擇學員</option>';
+      studentsCache.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.id; opt.textContent = s.name;
+        if (preselectedId === s.id) opt.selected = true;
+        sel.appendChild(opt);
+      });
+    }
+
+    // ===== Students =====
+    async function loadStudents() {
+      const grid = document.getElementById('studentGrid');
+      grid.innerHTML = '<div class="empty-state">載入中...</div>';
+      try {
+        const snapshot = await db.collection('students').orderBy('createdAt', 'desc').get();
+        if (snapshot.empty) { grid.innerHTML = '<div class="empty-state">尚無學員，點擊右上角新增</div>'; return; }
+
+        // Load all purchases and bookings once for calculations
+        const allPurchases = await db.collection('purchases').get();
+        const allBookings = await db.collection('bookings').get();
+
+        const purchasesByStudent = {};
+        allPurchases.forEach(d => {
+          const p = d.data();
+          if (!p.confirmed) return;
+          if (!purchasesByStudent[p.studentId]) purchasesByStudent[p.studentId] = 0;
+          purchasesByStudent[p.studentId] += p.sessions || 0;
+        });
+
+        const usedByStudent = {};
+        allBookings.forEach(d => {
+          const b = d.data();
+          if (b.status !== 'confirmed' || b.type === 'weight_log') return;
+          if (!usedByStudent[b.studentId]) usedByStudent[b.studentId] = 0;
+          usedByStudent[b.studentId]++;
+        });
+
+        grid.innerHTML = '';
+        snapshot.forEach(doc => {
+          const s = doc.data();
+          const total = purchasesByStudent[doc.id] || 0;
+          const used = usedByStudent[doc.id] || 0;
+          const remaining = Math.max(0, total - used);
+          const card = document.createElement('div');
+          card.className = 'student-card';
+          card.onclick = () => showDetail(doc.id);
+          card.innerHTML = `<h3>${s.name}</h3>
+            <div class="meta">${s.gender === 'female' ? '女性' : '男性'}${s.age ? ` · ${s.age} 歲` : ''}${s.contact ? `<br>${s.contact}` : ''}</div>
+            <div class="sessions"><span>已上 ${used} / ${total} 堂</span><span class="remaining">剩餘 ${remaining} 堂</span></div>`;
+          grid.appendChild(card);
+        });
+      } catch (err) { grid.innerHTML = '<div class="empty-state">載入失敗</div>'; }
+    }
+
+    async function loadStudentDetail(id) {
+      try {
+        const doc = await db.collection('students').doc(id).get();
+        if (!doc.exists) { showList(); return; }
+        const s = doc.data();
+
+        // Calculate totalSessions from confirmed purchases
+        const purchaseSnap = await db.collection('purchases').where('studentId', '==', id).get();
+        let totalSessions = 0;
+        const confirmedPurchases = [];
+        purchaseSnap.forEach(d => {
+          const p = d.data();
+          if (p.confirmed) { totalSessions += p.sessions || 0; confirmedPurchases.push(p); }
+        });
+
+        // Calculate usedSessions from confirmed bookings (exclude weight_log)
+        const bookingSnap = await db.collection('bookings').where('studentId', '==', id).get();
+        let usedSessions = 0;
+        bookingSnap.forEach(d => {
+          const b = d.data();
+          if (b.status === 'confirmed' && b.type !== 'weight_log') usedSessions++;
+        });
+
+        const remaining = Math.max(0, totalSessions - usedSessions);
+        document.getElementById('detailName').textContent = s.name;
+
+        // Purchase history HTML
+        let purchaseHtml = '';
+        if (confirmedPurchases.length > 0) {
+          confirmedPurchases.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+          purchaseHtml = '<div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.4rem">購課紀錄</div>' +
+            confirmedPurchases.map(p => {
+              const pps = p.sessions ? Math.round(p.totalAmount / p.sessions) : 0;
+              return `<div style="font-size:0.85rem;color:var(--text-muted);padding:0.2rem 0">${p.date} — ${p.sessions} 堂 × NT$${pps.toLocaleString()} = <span style="color:var(--gold)">NT$${(p.totalAmount || 0).toLocaleString()}</span></div>`;
+            }).join('');
+        }
+
+        document.getElementById('detailInfo').innerHTML = `
+          <div class="detail-section">
+            <div class="detail-section-title">個人資料</div>
+            <div class="info-grid">
+              <div class="info-item"><div class="label">性別</div><div class="value">${s.gender === 'female' ? '女性' : '男性'}</div></div>
+              <div class="info-item"><div class="label">身高</div><div class="value">${s.height ? s.height + ' cm' : '-'}</div></div>
+              <div class="info-item"><div class="label">體重</div><div class="value">${s.weight ? s.weight + ' kg' : '-'}</div></div>
+              <div class="info-item"><div class="label">年齡</div><div class="value">${s.age || '-'}</div></div>
+              <div class="info-item"><div class="label">聯絡方式</div><div class="value">${s.contact || '-'}</div></div>
+              <div class="info-item"><div class="label">開始日期</div><div class="value">${s.startDate || '-'}</div></div>
+            </div>
+            ${s.memo ? `<div style="margin-top:1rem;font-size:0.85rem;color:var(--text-muted)"><span style="color:var(--text-muted);font-size:0.75rem">備註</span><br>${s.memo}</div>` : ''}
+          </div>
+          <div class="detail-section">
+            <div class="detail-section-title">課程資訊</div>
+            <div class="session-highlight">
+              <div><div class="session-number">${remaining}</div><div class="session-label">剩餘堂數</div></div>
+              <div class="session-sub">已上 <strong>${usedSessions}</strong> 堂 / 共 <strong>${totalSessions}</strong> 堂</div>
+            </div>
+            ${purchaseHtml ? `<div style="margin-top:1rem">${purchaseHtml}</div>` : ''}
+          </div>`;
+        loadRecords(id);
+      } catch (err) { console.error(err); }
+    }
+
+    // ===== Student Modal =====
+    function showAddStudent() {
+      editingStudentId = null;
+      document.getElementById('studentModalTitle').textContent = '新增學員';
+      ['sName','sHeight','sWeight','sAge','sContact','sStartDate','sMemo'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('sGender').value = 'male';
+      openModal('studentModal');
+    }
+    async function showEditStudent() {
+      if (!currentStudentId) return;
+      editingStudentId = currentStudentId;
+      const doc = await db.collection('students').doc(currentStudentId).get();
+      const s = doc.data();
+      document.getElementById('studentModalTitle').textContent = '編輯學員';
+      document.getElementById('sName').value = s.name || '';
+      document.getElementById('sGender').value = s.gender || 'male';
+      document.getElementById('sHeight').value = s.height || '';
+      document.getElementById('sWeight').value = s.weight || '';
+      document.getElementById('sAge').value = s.age || '';
+      document.getElementById('sContact').value = s.contact || '';
+      document.getElementById('sStartDate').value = s.startDate || '';
+      document.getElementById('sMemo').value = s.memo || '';
+      openModal('studentModal');
+    }
+    async function saveStudent() {
+      const name = document.getElementById('sName').value.trim();
+      if (!name) { alert('請輸入姓名'); return; }
+      const data = {
+        name, gender: document.getElementById('sGender').value,
+        height: parseFloat(document.getElementById('sHeight').value) || null,
+        weight: parseFloat(document.getElementById('sWeight').value) || null,
+        age: parseInt(document.getElementById('sAge').value) || null,
+        contact: document.getElementById('sContact').value.trim() || null,
+        startDate: document.getElementById('sStartDate').value || null,
+        memo: document.getElementById('sMemo').value.trim() || null,
+      };
+      try {
+        if (editingStudentId) {
+          await db.collection('students').doc(editingStudentId).update(data);
+          closeModal('studentModal'); showToast('學員資料已更新'); loadStudentDetail(editingStudentId);
+        } else {
+          data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+          const docRef = await db.collection('students').add(data);
+          closeModal('studentModal'); showToast('學員已新增'); await loadStudentsCache(); showDetail(docRef.id);
+        }
+      } catch (err) { alert('儲存失敗：' + err.message); }
+    }
+    async function deleteStudent() {
+      if (!currentStudentId || !confirm('確定要刪除這位學員嗎？此操作無法復原。')) return;
+      try {
+        // Delete related bookings
+        const bookings = await db.collection('bookings').where('studentId', '==', currentStudentId).get();
+        const batch = db.batch();
+        bookings.forEach(doc => batch.delete(doc.ref));
+        // Delete related purchases
+        const purchases = await db.collection('purchases').where('studentId', '==', currentStudentId).get();
+        purchases.forEach(doc => batch.delete(doc.ref));
+        batch.delete(db.collection('students').doc(currentStudentId));
+        await batch.commit();
+        await loadStudentsCache(); showList();
+      } catch (err) { alert('刪除失敗：' + err.message); }
+    }
+
+    // ===== Records (unified with bookings) =====
+    async function loadRecords(studentId) {
+      const container = document.getElementById('recordsList');
+      const weightLogsContainer = document.getElementById('weightLogsList');
+      container.innerHTML = '<div class="empty-state">載入中...</div>';
+      try {
+        const snapshot = await db.collection('bookings')
+          .where('studentId', '==', studentId).get();
+
+        const confirmed = [];
+        const upcomingForStudent = [];
+        snapshot.forEach(doc => {
+          const d = doc.data();
+          if (d.status === 'confirmed') confirmed.push({ id: doc.id, ...d });
+          else if (d.status === 'upcoming' || d.status === 'pending') upcomingForStudent.push({ id: doc.id, ...d });
+        });
+        confirmed.sort((a, b) => (b.dateTime || '').localeCompare(a.dateTime || ''));
+        upcomingForStudent.sort((a, b) => (a.dateTime || '').localeCompare(b.dateTime || ''));
+
+        // Render upcoming bookings for this student
+        const upSection = document.getElementById('studentUpcomingSection');
+        const upList = document.getElementById('studentUpcomingList');
+        if (upcomingForStudent.length > 0) {
+          upSection.style.display = 'block';
+          upList.innerHTML = '';
+          const weekdayNames = ['日', '一', '二', '三', '四', '五', '六'];
+          upcomingForStudent.forEach(b => {
+            const dt = new Date(b.dateTime);
+            const dateStr = dt.toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric' });
+            const timeStr = dt.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+            const weekday = weekdayNames[dt.getDay()];
+            const isPending = b.status === 'pending';
+            const div = document.createElement('div');
+            div.className = 'booking-card';
+            div.innerHTML = `
+              <div class="booking-info"><strong>${dateStr}（${weekday}）${timeStr}</strong>${isPending ? '<div style="font-size:0.8rem;color:var(--gold)">待確認完課</div>' : ''}</div>
+              <div style="display:flex;gap:0.5rem">
+                ${isPending ? `<button class="btn btn-success btn-sm" onclick="showTodoConfirm('${b.id}','${b.studentId}','${b.studentName}','${b.dateTime}')">確認完課</button>` : ''}
+                <button class="btn btn-outline btn-sm" onclick="cancelBooking('${b.id}');setTimeout(()=>loadRecords('${studentId}'),500)">取消</button>
+              </div>`;
+            upList.appendChild(div);
+          });
+        } else {
+          upSection.style.display = 'none';
+        }
+
+        // Separate weight logs from class records
+        const classRecords = confirmed.filter(r => r.type !== 'weight_log');
+        const weightLogs = confirmed.filter(r => r.type === 'weight_log');
+        const weightData = [];
+        const allBookings = [];
+
+        // Collect weight data from ALL records (both classes and weight logs)
+        confirmed.forEach(r => {
+          if (r.weight) weightData.push({ date: r.dateTime.split('T')[0], weight: r.weight });
+          allBookings.push(r);
+        });
+
+        // Render class records
+        if (classRecords.length === 0) {
+          container.innerHTML = '<div class="empty-state">尚無上課紀錄</div>';
+        } else {
+          container.innerHTML = '';
+          classRecords.forEach(r => {
+            const dt = new Date(r.dateTime);
+            const dateStr = dt.toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric' });
+            const timeStr = dt.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+
+            let statsHtml = '';
+            if (r.weight) statsHtml += `<span>體重：${r.weight} kg</span>`;
+            if (r.bodyFat) statsHtml += `<span>體脂：${r.bodyFat}%</span>`;
+
+            let exercisesHtml = '';
+            if (r.exercises && r.exercises.length > 0) {
+              exercisesHtml = '<div class="record-exercises">' +
+                r.exercises.map(e => `<div class="re-item">${e.name} <span class="re-weight">${e.weight}</span>${e.reps || e.sets ? `<span class="re-sets">${e.reps || ''}${e.reps && e.sets ? '×' : ''}${e.sets || ''}${!e.reps && e.sets ? '組' : ''}</span>` : ''}</div>`).join('') +
+                '</div>';
+            }
+
+            const card = document.createElement('div');
+            card.className = 'record-card';
+            card.innerHTML = `<div class="record-date">${dateStr} ${timeStr}</div>
+              ${statsHtml ? `<div class="record-stats">${statsHtml}</div>` : ''}
+              ${r.notes ? `<div class="record-notes">${r.notes}</div>` : ''}
+              ${exercisesHtml}
+              <div style="margin-top:0.75rem;display:flex;gap:0.5rem">
+                <button class="btn btn-outline btn-sm" onclick="showEditRecord('${r.id}')">編輯</button>
+                <button class="btn btn-outline btn-sm" style="color:var(--danger);border-color:var(--danger);opacity:0.6" onclick="deleteRecord('${r.id}', false)">刪除</button>
+              </div>`;
+            container.appendChild(card);
+          });
+        }
+
+        // Render weight logs inside the weight chart section
+        if (weightLogs.length > 0) {
+          weightLogsContainer.innerHTML = '<div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.5rem">體重紀錄</div>';
+          weightLogs.forEach(r => {
+            const dt = new Date(r.dateTime);
+            const dateStr = dt.toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric' });
+            const div = document.createElement('div');
+            div.className = 'record-card';
+            div.innerHTML = `<div class="record-date">${dateStr}</div>
+              <div class="record-stats"><span>體重：${r.weight} kg</span>${r.bodyFat ? `<span>體脂：${r.bodyFat}%</span>` : ''}</div>
+              <div style="margin-top:0.5rem;display:flex;gap:0.5rem">
+                <button class="btn btn-outline btn-sm" onclick="showEditRecord('${r.id}')">編輯</button>
+                <button class="btn btn-outline btn-sm" style="color:var(--danger);border-color:var(--danger);opacity:0.6" onclick="deleteRecord('${r.id}', true)">刪除</button>
+              </div>`;
+            weightLogsContainer.appendChild(div);
+          });
+        } else {
+          weightLogsContainer.innerHTML = '';
+        }
+
+        renderWeightChart(weightData.reverse());
+        renderExerciseReference(allBookings);
+      } catch (err) { container.innerHTML = '<div class="empty-state">載入失敗</div>'; console.error(err); }
+    }
+
+    function showAddRecord() {
+      editingRecordId = null;
+      document.getElementById('recordModalTitle').textContent = '補登上課';
+      document.getElementById('rDate').value = todayStr();
+      document.getElementById('rTime').value = '10:00';
+      ['rWeight','rBodyFat','rNotes'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('rExercises').innerHTML = '';
+      renderExercisePicker('rExercisePicker', 'rExercises');
+      openModal('recordModal');
+    }
+
+    async function showEditRecord(bookingId) {
+      editingRecordId = bookingId;
+      document.getElementById('recordModalTitle').textContent = '編輯紀錄';
+      try {
+        const doc = await db.collection('bookings').doc(bookingId).get();
+        const r = doc.data();
+        const dt = new Date(r.dateTime);
+        document.getElementById('rDate').value = r.dateTime.split('T')[0];
+        document.getElementById('rTime').value = `${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+        document.getElementById('rWeight').value = r.weight || '';
+        document.getElementById('rBodyFat').value = r.bodyFat || '';
+        document.getElementById('rNotes').value = r.notes || '';
+        document.getElementById('rExercises').innerHTML = '';
+        renderExercisePicker('rExercisePicker', 'rExercises');
+        if (r.exercises && r.exercises.length) {
+          r.exercises.forEach(e => addExerciseRow('rExercises', e.name, e.weight, e.reps, e.sets));
+        }
+        openModal('recordModal');
+      } catch (err) { alert('載入失敗：' + err.message); }
+    }
+
+    async function saveRecord() {
+      if (saving) return; saving = true;
+      const date = document.getElementById('rDate').value;
+      const time = document.getElementById('rTime').value || '10:00';
+      if (!date || !currentStudentId) { saving = false; alert('請選擇日期'); return; }
+
+      const student = studentsCache.find(s => s.id === currentStudentId);
+      const dateTime = new Date(`${date}T${time}`).toISOString();
+      const data = {
+        weight: parseFloat(document.getElementById('rWeight').value) || null,
+        bodyFat: parseFloat(document.getElementById('rBodyFat').value) || null,
+        notes: document.getElementById('rNotes').value.trim() || null,
+        exercises: getExercisesFromContainer('rExercises'),
+        dateTime,
+      };
+
+      try {
+        if (editingRecordId) {
+          await db.collection('bookings').doc(editingRecordId).update(data);
+          closeModal('recordModal'); showToast('紀錄已更新'); loadExerciseHistory(); loadStudentDetail(currentStudentId);
+        } else {
+          data.studentId = currentStudentId;
+          data.studentName = student ? student.name : '';
+          data.status = 'confirmed';
+          data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+          await db.collection('bookings').add(data);
+          closeModal('recordModal'); showToast('上課紀錄已新增'); loadExerciseHistory(); loadStudentDetail(currentStudentId);
+        }
+      } catch (err) { alert('儲存失敗：' + err.message); } finally { saving = false; editingRecordId = null; }
+    }
+
+    async function deleteRecord(bookingId, isWeightLog) {
+      if (!currentStudentId || !confirm('確定要刪除這筆紀錄嗎？')) return;
+      try {
+        await db.collection('bookings').doc(bookingId).delete();
+        loadStudentDetail(currentStudentId);
+      } catch (err) { alert('刪除失敗：' + err.message); }
+    }
+
+    // ===== Exercises =====
+    let exerciseHistory = []; // all exercise names used before, for suggestions
+
+    async function loadExerciseHistory() {
+      try {
+        const snap = await db.collection('bookings').where('status', '==', 'confirmed').get();
+        const names = new Set();
+        snap.forEach(doc => {
+          const d = doc.data();
+          if (d.exercises) d.exercises.forEach(e => { if (e.name) names.add(e.name); });
+        });
+        exerciseHistory = [...names].sort();
+      } catch (err) { console.error(err); }
+    }
+
+    function addExerciseRow(containerId, name, weight, reps, sets) {
+      const container = document.getElementById(containerId);
+      const row = document.createElement('div');
+      row.className = 'exercise-row';
+      row.style.position = 'relative';
+      row.innerHTML = `
+        <input class="ex-name" placeholder="動作名稱" value="${name || ''}" oninput="showExSuggest(this)" onfocus="showExSuggest(this)" onblur="setTimeout(()=>hideExSuggest(this),200)">
+        <input class="ex-weight" placeholder="重量" value="${weight || ''}">
+        <input class="ex-reps" placeholder="次數" value="${reps || '8'}">
+        <input class="ex-sets" placeholder="組數" value="${sets || '4'}">
+        <button type="button" class="ex-remove" onclick="this.parentElement.remove()">✕</button>
+        <div class="exercise-suggest" style="display:none; top:100%; left:0;"></div>`;
+      container.appendChild(row);
+      row.querySelector('.ex-name').focus();
+    }
+
+    function showExSuggest(input) {
+      const val = input.value.trim().toLowerCase();
+      const suggestDiv = input.parentElement.querySelector('.exercise-suggest');
+      const matches = exerciseHistory.filter(n => n.toLowerCase().includes(val));
+      if (matches.length === 0 || (matches.length === 1 && matches[0] === input.value)) {
+        suggestDiv.style.display = 'none'; return;
+      }
+      suggestDiv.innerHTML = '';
+      matches.slice(0, 8).forEach(name => {
+        const item = document.createElement('div');
+        item.className = 'exercise-suggest-item';
+        item.textContent = name;
+        item.onmousedown = () => { input.value = name; suggestDiv.style.display = 'none'; };
+        suggestDiv.appendChild(item);
+      });
+      suggestDiv.style.display = 'block';
+    }
+
+    function hideExSuggest(input) {
+      const suggestDiv = input.parentElement.querySelector('.exercise-suggest');
+      if (suggestDiv) suggestDiv.style.display = 'none';
+    }
+
+    // Preset exercises by category
+    const presetExercises = {
+      '胸': ['史密斯上胸', '機械上胸推', '機械臥推', '槓鈴臥推', '啞鈴臥推', '機械雙槓下胸', '機械夾胸', 'cable夾下胸'],
+      '背': ['引體向上', '機械闊背下拉', '滑輪下拉', '機械寬握划船', '機械窄握划船', '機械反手划船', '直臂下拉', '地雷管划船'],
+      '肩': ['機械肩推', '機械寬握肩推', '機械窄握肩推', '機械前平舉', '啞鈴側平舉', '機械肩飛鳥', '啞鈴椅上側平舉', '機械後三角', '啞鈴後三角', 'cable後三角'],
+      '腿': ['哈克蹲', '槓鈴深蹲', '史密斯深蹲', '機械腿推', '機械向上腿推', '機械前腿', '機械腿外展', '機械腿後勾', '機械臀推', '槓鈴羅馬尼亞硬舉'],
+      '手臂': ['纜繩三頭下壓', '二頭彎舉', '啞鈴鎚式彎舉', '纜繩二頭彎舉', '纜繩前三角'],
+    };
+
+    // Custom exercises stored in Firestore (merged with presets)
+    let customExercises = {}; // { '胸': ['啞鈴上胸'], ... }
+
+    async function loadCustomExercises() {
+      try {
+        const doc = await db.collection('settings').doc('exercises').get();
+        if (doc.exists) customExercises = doc.data().custom || {};
+      } catch (err) { console.error(err); }
+    }
+
+    async function saveCustomExercise(cat, name) {
+      if (!customExercises[cat]) customExercises[cat] = [];
+      if (customExercises[cat].includes(name)) return;
+      customExercises[cat].push(name);
+      try {
+        await db.collection('settings').doc('exercises').set({ custom: customExercises }, { merge: true });
+      } catch (err) { console.error(err); }
+    }
+
+    function getExercisesForCat(cat) {
+      const preset = presetExercises[cat] || [];
+      const custom = customExercises[cat] || [];
+      return [...new Set([...preset, ...custom])];
+    }
+
+    function renderExercisePicker(pickerContainerId, exercisesContainerId) {
+      const container = document.getElementById(pickerContainerId);
+      const pickerId = pickerContainerId + '_inner';
+      const cats = Object.keys(presetExercises);
+      let currentCat = cats[0];
+
+      container.innerHTML = `
+        <button type="button" class="exercise-picker-toggle" onclick="togglePicker('${pickerId}', this)">
+          選擇動作 <span class="arrow">▼</span>
+        </button>
+        <div id="${pickerId}" class="exercise-picker-body">
+          <div class="exercise-cat-tabs" id="${pickerId}_tabs"></div>
+          <div class="exercise-cat-items" id="${pickerId}_items"></div>
+          <div style="margin-top:0.6rem;display:flex;gap:0.4rem">
+            <input id="${pickerId}_custom" class="ex-name" placeholder="自訂動作名稱" style="flex:1;padding:0.4rem 0.6rem;font-size:0.8rem;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);outline:none">
+            <button type="button" class="btn btn-gold btn-sm" style="font-size:0.75rem;padding:0.35rem 0.6rem" onclick="addCustomExercise('${pickerId}','${exercisesContainerId}')">+ 加到此分類</button>
+          </div>
+        </div>`;
+
+      const tabsEl = document.getElementById(pickerId + '_tabs');
+      const itemsEl = document.getElementById(pickerId + '_items');
+
+      function showCat(cat) {
+        currentCat = cat;
+        tabsEl.querySelectorAll('.exercise-cat-tab').forEach(t => t.classList.toggle('active', t.dataset.cat === cat));
+        itemsEl.innerHTML = '';
+        getExercisesForCat(cat).forEach(name => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'exercise-cat-item';
+          btn.textContent = name;
+          btn.onclick = () => addExerciseRow(exercisesContainerId, name, '');
+          itemsEl.appendChild(btn);
+        });
+      }
+
+      cats.forEach((cat, i) => {
+        const tab = document.createElement('button');
+        tab.type = 'button';
+        tab.className = 'exercise-cat-tab' + (i === 0 ? ' active' : '');
+        tab.dataset.cat = cat;
+        tab.textContent = cat;
+        tab.onclick = () => showCat(cat);
+        tabsEl.appendChild(tab);
+      });
+
+      showCat(cats[0]);
+
+      // Store showCat reference for addCustomExercise
+      container._showCat = showCat;
+      container._getCurrentCat = () => currentCat;
+    }
+
+    function togglePicker(pickerId, toggleBtn) {
+      const body = document.getElementById(pickerId);
+      body.classList.toggle('open');
+      toggleBtn.classList.toggle('open');
+    }
+
+    async function addCustomExercise(pickerId, exercisesContainerId) {
+      const input = document.getElementById(pickerId + '_custom');
+      const name = input.value.trim();
+      if (!name) return;
+      const container = input.closest('.exercise-picker');
+      const cat = container._getCurrentCat();
+      await saveCustomExercise(cat, name);
+      addExerciseRow(exercisesContainerId, name, '');
+      input.value = '';
+      container._showCat(cat); // refresh the category view
+      showToast(`「${name}」已加到${cat}分類`);
+    }
+
+    function getExercisesFromContainer(containerId) {
+      const rows = document.getElementById(containerId).querySelectorAll('.exercise-row');
+      const exercises = [];
+      rows.forEach(row => {
+        const name = row.querySelector('.ex-name').value.trim();
+        const weight = row.querySelector('.ex-weight').value.trim();
+        const reps = row.querySelector('.ex-reps').value.trim();
+        const sets = row.querySelector('.ex-sets').value.trim();
+        if (name) exercises.push({ name, weight, reps, sets });
+      });
+      return exercises;
+    }
+
+    function renderExerciseReference(allBookings) {
+      const section = document.getElementById('exerciseRefSection');
+      const grid = document.getElementById('exerciseRefGrid');
+
+      // Get the latest weight for each exercise
+      const latestExercises = {};
+      // Sort by dateTime ascending so later entries overwrite earlier
+      allBookings.sort((a, b) => (a.dateTime || '').localeCompare(b.dateTime || ''));
+      allBookings.forEach(b => {
+        if (b.exercises) {
+          b.exercises.forEach(e => {
+            if (e.name) latestExercises[e.name] = { weight: e.weight || '-', reps: e.reps || '', sets: e.sets || '' };
+          });
+        }
+      });
+
+      const entries = Object.entries(latestExercises);
+      if (entries.length === 0) { section.style.display = 'none'; return; }
+
+      section.style.display = 'block';
+      grid.innerHTML = '';
+      window._exerciseRefData = entries;
+      entries.forEach(([name, info], idx) => {
+        const item = document.createElement('div');
+        item.className = 'exercise-ref-item';
+        item.dataset.idx = idx;
+        item.onclick = () => { item.classList.toggle('selected'); updateExerciseRefText(); };
+        const setsStr = info.reps || info.sets ? ` · ${info.reps || ''}${info.reps && info.sets ? '×' : ''}${info.sets || ''}` : '';
+        item.innerHTML = `<span class="ex-ref-name">${name}</span><span class="ex-ref-weight">${info.weight}${setsStr}</span>`;
+        grid.appendChild(item);
+      });
+    }
+
+    function updateExerciseRefText() {
+      const grid = document.getElementById('exerciseRefGrid');
+      const output = document.getElementById('exerciseRefOutput');
+      const textarea = document.getElementById('exerciseRefText');
+      const selected = grid.querySelectorAll('.exercise-ref-item.selected');
+
+      if (selected.length === 0) { output.style.display = 'none'; return; }
+      output.style.display = 'block';
+
+      const lines = [];
+      const studentName = document.getElementById('detailName').textContent;
+      lines.push(studentName);
+      selected.forEach(el => {
+        const idx = parseInt(el.dataset.idx);
+        const [name, info] = window._exerciseRefData[idx];
+        let line = `- ${name} ${info.weight}`;
+        if (info.reps || info.sets) line += `（${info.reps || ''}${info.reps && info.sets ? '×' : ''}${info.sets || ''}）`;
+        lines.push(line);
+      });
+      textarea.value = lines.join('\n');
+    }
+
+    function copyExerciseRef() {
+      const textarea = document.getElementById('exerciseRefText');
+      navigator.clipboard.writeText(textarea.value).then(() => showToast('已複製到剪貼簿'));
+    }
+
+    function selectAllExerciseRef() {
+      document.querySelectorAll('#exerciseRefGrid .exercise-ref-item').forEach(el => el.classList.add('selected'));
+      updateExerciseRefText();
+    }
+
+    function clearExerciseRef() {
+      document.querySelectorAll('#exerciseRefGrid .exercise-ref-item').forEach(el => el.classList.remove('selected'));
+      updateExerciseRefText();
+    }
+
+    // ===== Quick Actions from Student Detail =====
+    function showBookingForStudent() {
+      populateStudentSelect('bStudent', currentStudentId);
+      document.getElementById('bDate').value = todayStr();
+      document.getElementById('bTime').value = '10:00';
+      openModal('bookingModal');
+    }
+    function showPurchaseForStudent() {
+      populateStudentSelect('pStudent', currentStudentId);
+      document.getElementById('pDate').value = todayStr();
+      document.getElementById('pSessions').value = '';
+      document.getElementById('pAmount').value = '';
+      openModal('purchaseModal');
+    }
+
+    // ===== Quick Weight Log =====
+    function showQuickWeight() {
+      document.getElementById('qwDate').value = todayStr();
+      document.getElementById('qwWeight').value = '';
+      document.getElementById('qwBodyFat').value = '';
+      openModal('weightModal');
+    }
+
+    async function saveQuickWeight() {
+      if (saving) return; saving = true;
+      const weight = parseFloat(document.getElementById('qwWeight').value);
+      if (!weight || !currentStudentId) { saving = false; alert('請輸入體重'); return; }
+      const date = document.getElementById('qwDate').value || todayStr();
+      const student = studentsCache.find(s => s.id === currentStudentId);
+      const bodyFat = parseFloat(document.getElementById('qwBodyFat').value) || null;
+
+      try {
+        await db.collection('bookings').add({
+          studentId: currentStudentId,
+          studentName: student ? student.name : '',
+          dateTime: `${date}T00:00:00.000Z`,
+          status: 'confirmed',
+          type: 'weight_log',
+          weight,
+          bodyFat,
+          notes: null,
+          exercises: [],
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+        // Update student's weight (and bodyFat if provided)
+        const updateData = { weight };
+        if (bodyFat) updateData.bodyFat = bodyFat;
+        await db.collection('students').doc(currentStudentId).update(updateData);
+        await loadStudentsCache();
+        closeModal('weightModal'); showToast('體重已記錄'); loadStudentDetail(currentStudentId);
+      } catch (err) { alert('儲存失敗：' + err.message); } finally { saving = false; }
+    }
+
+    // ===== Weight Chart =====
+    function renderWeightChart(data) {
+      const section = document.getElementById('weightChartSection');
+      const label = document.getElementById('weightChangeLabel');
+
+      if (data.length < 1) { section.style.display = 'none'; return; }
+      section.style.display = 'block';
+
+      if (data.length === 1) {
+        label.className = 'weight-change';
+        label.textContent = `目前 ${data[0].weight} kg`;
+      } else {
+        const first = data[0].weight;
+        const last = data[data.length - 1].weight;
+        const changePct = ((last - first) / first * 100).toFixed(1);
+        if (last <= first) {
+          label.className = 'weight-change down';
+          label.textContent = `${changePct}%（${first} → ${last} kg）`;
+        } else {
+          label.className = 'weight-change up';
+          label.textContent = `+${changePct}%（${first} → ${last} kg）`;
+        }
+      }
+
+      const canvas = document.getElementById('weightChart');
+      const ctx = canvas.getContext('2d');
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+      const W = rect.width;
+      const H = rect.height;
+      ctx.clearRect(0, 0, W, H);
+
+      const weights = data.map(d => d.weight);
+      const minW = Math.min(...weights) - 1;
+      const maxW = Math.max(...weights) + 1;
+      const padX = 50, padY = 30;
+      const chartW = W - padX * 2;
+      const chartH = H - padY * 2;
+
+      const points = data.map((d, i) => ({
+        x: padX + (data.length === 1 ? chartW / 2 : (i / (data.length - 1)) * chartW),
+        y: padY + chartH - ((d.weight - minW) / (maxW - minW)) * chartH,
+      }));
+
+      // Grid lines
+      ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= 4; i++) {
+        const y = padY + (i / 4) * chartH;
+        ctx.beginPath(); ctx.moveTo(padX, y); ctx.lineTo(W - padX, y); ctx.stroke();
+        const val = (maxW - (i / 4) * (maxW - minW)).toFixed(1);
+        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+        ctx.font = '11px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText(val, padX - 8, y + 4);
+      }
+
+      // Line gradient
+      const grad = ctx.createLinearGradient(0, padY, 0, H - padY);
+      grad.addColorStop(0, '#f5a623');
+      grad.addColorStop(1, '#2ecc71');
+
+      // Area fill
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, H - padY);
+      points.forEach(p => ctx.lineTo(p.x, p.y));
+      ctx.lineTo(points[points.length - 1].x, H - padY);
+      ctx.closePath();
+      const areaGrad = ctx.createLinearGradient(0, padY, 0, H - padY);
+      areaGrad.addColorStop(0, 'rgba(245,166,35,0.15)');
+      areaGrad.addColorStop(1, 'rgba(46,204,113,0.02)');
+      ctx.fillStyle = areaGrad;
+      ctx.fill();
+
+      // Line
+      ctx.beginPath();
+      points.forEach((p, i) => { if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y); });
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = 2.5;
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+
+      // Dots + labels
+      points.forEach((p, i) => {
+        ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#f5a623'; ctx.fill();
+        ctx.fillStyle = 'rgba(255,255,255,0.6)';
+        ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(data[i].date.slice(5), p.x, H - padY + 16);
+      });
+    }
+
+    // ===== Schedule =====
+    async function loadSchedule() {
+      const nowStr = new Date().toISOString();
+      try {
+        const snap = await db.collection('bookings').orderBy('dateTime', 'asc').get();
+        const todos = [], upcoming = [], past = [];
+
+        const batch = db.batch();
+        let hasBatchUpdates = false;
+        snap.forEach(doc => {
+          const b = { id: doc.id, ...doc.data() };
+          if (b.status === 'upcoming' && b.dateTime <= nowStr) {
+            batch.update(doc.ref, { status: 'pending' });
+            hasBatchUpdates = true;
+            b.status = 'pending';
+          }
+          if (b.status === 'pending') todos.push(b);
+          else if (b.status === 'upcoming') upcoming.push(b);
+          else past.push(b);
+        });
+        if (hasBatchUpdates) await batch.commit();
+
+        // Todos
+        const todoC = document.getElementById('todoList');
+        if (!todos.length) { todoC.innerHTML = '<div class="empty-state">沒有待確認的課程</div>'; }
+        else {
+          todoC.innerHTML = '';
+          todos.forEach(b => {
+            const dt = new Date(b.dateTime);
+            const dateStr = dt.toLocaleDateString('zh-TW', { month: 'long', day: 'numeric' });
+            const timeStr = dt.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+            const div = document.createElement('div'); div.className = 'todo-card';
+            div.innerHTML = `<div class="todo-info"><h3>${b.studentName}</h3><div class="todo-time">${dateStr} ${timeStr}</div></div>
+              <div class="todo-actions">
+                <button class="btn btn-success btn-sm" onclick="showTodoConfirm('${b.id}','${b.studentId}','${b.studentName}','${b.dateTime}')">確認完課</button>
+                <button class="btn btn-outline btn-sm" onclick="cancelBooking('${b.id}')">取消</button>
+              </div>`;
+            todoC.appendChild(div);
+          });
+        }
+
+        // Upcoming
+        const upC = document.getElementById('upcomingBookings');
+        if (!upcoming.length) { upC.innerHTML = '<div class="empty-state">沒有近期預約</div>'; }
+        else {
+          upC.innerHTML = '';
+          upcoming.forEach(b => {
+            const dt = new Date(b.dateTime);
+            const dateStr = dt.toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric' });
+            const timeStr = dt.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+            const div = document.createElement('div'); div.className = 'booking-card';
+            div.innerHTML = `<div class="booking-info"><strong>${b.studentName}</strong><div class="booking-time">${dateStr} ${timeStr}</div></div>
+              <button class="btn btn-outline btn-sm" onclick="cancelBooking('${b.id}')">取消預約</button>`;
+            upC.appendChild(div);
+          });
+        }
+
+        // Past
+        const pastC = document.getElementById('pastBookings');
+        const recentPast = past.reverse().slice(0, 30);
+        if (!recentPast.length) { pastC.innerHTML = '<div class="empty-state">沒有歷史紀錄</div>'; }
+        else {
+          pastC.innerHTML = '';
+          recentPast.forEach((b, idx) => {
+            const dt = new Date(b.dateTime);
+            const dateStr = dt.toLocaleDateString('zh-TW', { month: 'short', day: 'numeric' });
+            const timeStr = dt.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+            const hasDetails = (b.exercises && b.exercises.length) || b.weight || b.bodyFat || b.notes;
+            const detailId = 'pastDetail_' + idx;
+
+            let detailHtml = '';
+            if (hasDetails) {
+              let inner = '';
+              if (b.weight) inner += `<span style="color:var(--text-muted);font-size:0.85rem">體重：${b.weight} kg</span> `;
+              if (b.bodyFat) inner += `<span style="color:var(--text-muted);font-size:0.85rem">體脂：${b.bodyFat}%</span> `;
+              if (b.notes) inner += `<div style="color:var(--text);font-size:0.85rem;margin-top:0.3rem">${b.notes}</div>`;
+              if (b.exercises && b.exercises.length) {
+                inner += '<div class="record-exercises" style="margin-top:0.4rem">' +
+                  b.exercises.map(e => `<div class="re-item">${e.name} <span class="re-weight">${e.weight}</span>${e.reps || e.sets ? `<span class="re-sets">${e.reps || ''}${e.reps && e.sets ? '×' : ''}${e.sets || ''}${!e.reps && e.sets ? '組' : ''}</span>` : ''}</div>`).join('') +
+                  '</div>';
+              }
+              detailHtml = `<div id="${detailId}" style="display:none;padding:0.75rem 0 0;border-top:1px solid var(--border);margin-top:0.75rem">${inner}</div>`;
+            }
+
+            const div = document.createElement('div'); div.className = 'booking-card'; div.style.flexWrap = 'wrap';
+            div.innerHTML = `
+              <div class="booking-info" style="flex:1;cursor:${hasDetails ? 'pointer' : 'default'}" ${hasDetails ? `onclick="document.getElementById('${detailId}').style.display = document.getElementById('${detailId}').style.display === 'none' ? 'block' : 'none'"` : ''}>
+                <strong>${b.studentName}</strong>
+                <div class="booking-time">${dateStr} ${timeStr} ${hasDetails ? '<span style="color:var(--gold);font-size:0.75rem">▼ 詳細</span>' : ''}</div>
+              </div>
+              <span class="booking-status ${b.status}">${b.status === 'confirmed' ? '已完課' : '已取消'}</span>
+              ${hasDetails ? `<div style="width:100%">${detailHtml}</div>` : ''}`;
+            pastC.appendChild(div);
+          });
+        }
+        // Render calendar
+        renderCalendar(upcoming);
+      } catch (err) { console.error(err); }
+    }
+
+    // ===== Calendar =====
+    let calViewDays = 7;
+    let calOffset = 0; // weeks or months offset from today
+    let calUpcomingData = [];
+
+    function setCalView(days, btn) {
+      calViewDays = days;
+      calOffset = 0;
+      document.querySelectorAll('.cal-toggle-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderCalendar(calUpcomingData);
+    }
+
+    function renderCalendar(upcoming) {
+      calUpcomingData = upcoming;
+      const container = document.getElementById('calendarView');
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // Group bookings by date string (YYYY-MM-DD)
+      const byDate = {};
+      upcoming.forEach(b => {
+        const dateKey = b.dateTime.split('T')[0];
+        if (!byDate[dateKey]) byDate[dateKey] = [];
+        byDate[dateKey].push(b);
+      });
+
+      if (calViewDays === 7) {
+        renderWeekView(container, today, byDate);
+      } else {
+        renderMonthView(container, today, byDate);
+      }
+    }
+
+    function renderWeekView(container, today, byDate) {
+      const startDate = new Date(today);
+      startDate.setDate(startDate.getDate() + calOffset * 7);
+      const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+
+      let navTitle = '';
+      const endDate = new Date(startDate);
+      endDate.setDate(endDate.getDate() + 6);
+      navTitle = `${startDate.getMonth() + 1}/${startDate.getDate()} — ${endDate.getMonth() + 1}/${endDate.getDate()}`;
+
+      let html = `<div class="cal-nav">
+        <button class="cal-nav-btn" onclick="calOffset--;renderCalendar(calUpcomingData)">◀</button>
+        <span class="cal-nav-title">${navTitle}</span>
+        <button class="cal-nav-btn" onclick="calOffset++;renderCalendar(calUpcomingData)">▶</button>
+        <button class="cal-nav-btn" onclick="calOffset=0;renderCalendar(calUpcomingData)" style="font-size:0.75rem">今天</button>
+      </div>`;
+      html += '<div class="cal-week">';
+
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(startDate);
+        d.setDate(d.getDate() + i);
+        const dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        const isToday = d.getTime() === today.getTime();
+        const events = byDate[dateKey] || [];
+
+        html += `<div class="cal-day${isToday ? ' today' : ''}" onclick="bookOnDate('${dateKey}')" style="cursor:pointer">
+          <div class="cal-day-num">${d.getDate()} <span class="cal-day-weekday">${weekdays[d.getDay()]}</span></div>`;
+
+        events.forEach(b => {
+          const dt = new Date(b.dateTime);
+          const timeStr = dt.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+          html += `<div class="cal-event" onclick="event.stopPropagation()" title="${b.studentName} ${timeStr}">
+            <span class="cal-event-time">${timeStr}</span> ${b.studentName}
+          </div>`;
+        });
+
+        html += '</div>';
+      }
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    function renderMonthView(container, today, byDate) {
+      const viewDate = new Date(today.getFullYear(), today.getMonth() + calOffset, 1);
+      const year = viewDate.getFullYear();
+      const month = viewDate.getMonth();
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+      const monthNames = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+
+      let html = `<div class="cal-nav">
+        <button class="cal-nav-btn" onclick="calOffset--;renderCalendar(calUpcomingData)">◀</button>
+        <span class="cal-nav-title">${year} 年 ${monthNames[month]}</span>
+        <button class="cal-nav-btn" onclick="calOffset++;renderCalendar(calUpcomingData)">▶</button>
+        <button class="cal-nav-btn" onclick="calOffset=0;renderCalendar(calUpcomingData)" style="font-size:0.75rem">今天</button>
+      </div>`;
+      html += '<div class="cal-month">';
+
+      // Header
+      weekdays.forEach(w => { html += `<div class="cal-header">${w}</div>`; });
+
+      // Empty cells before first day
+      for (let i = 0; i < firstDay; i++) { html += '<div class="cal-day empty"></div>'; }
+
+      // Days
+      for (let day = 1; day <= daysInMonth; day++) {
+        const d = new Date(year, month, day);
+        const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const isToday = d.getTime() === today.getTime();
+        const events = byDate[dateKey] || [];
+
+        html += `<div class="cal-day${isToday ? ' today' : ''}" onclick="bookOnDate('${dateKey}')" style="cursor:pointer">
+          <div class="cal-day-num">${day}</div>`;
+
+        events.forEach(b => {
+          const dt = new Date(b.dateTime);
+          const timeStr = dt.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+          html += `<div class="cal-event" onclick="event.stopPropagation()" title="${b.studentName} ${timeStr}">
+            <span class="cal-event-time">${timeStr}</span> ${b.studentName}
+          </div>`;
+        });
+
+        html += '</div>';
+      }
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    function bookOnDate(dateStr) {
+      populateStudentSelect('bStudent');
+      document.getElementById('bDate').value = dateStr;
+      document.getElementById('bTime').value = '10:00';
+      openModal('bookingModal');
+    }
+
+    function showAddBooking() {
+      populateStudentSelect('bStudent');
+      document.getElementById('bDate').value = todayStr();
+      document.getElementById('bTime').value = '10:00';
+      openModal('bookingModal');
+    }
+
+    async function saveBooking() {
+      if (saving) return; saving = true;
+      const studentId = document.getElementById('bStudent').value;
+      const date = document.getElementById('bDate').value;
+      const time = document.getElementById('bTime').value;
+      if (!studentId || !date || !time) { saving = false; alert('請填寫完整資料'); return; }
+      const student = studentsCache.find(s => s.id === studentId);
+      if (!student) { saving = false; alert('找不到學生資料，請重新載入'); return; }
+      try {
+        await db.collection('bookings').add({
+          studentId, studentName: student.name,
+          dateTime: new Date(`${date}T${time}`).toISOString(),
+          status: 'upcoming',
+          weight: null, bodyFat: null, notes: null,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+        closeModal('bookingModal'); showToast('預約成功'); updateTodoBadge(); loadSchedule();
+        if (currentStudentId) loadStudentDetail(currentStudentId);
+      } catch (err) { alert('儲存失敗：' + err.message); } finally { saving = false; }
+    }
+
+    async function cancelBooking(bookingId) {
+      if (!confirm('確定要取消這個預約嗎？')) return;
+      try { await db.collection('bookings').doc(bookingId).update({ status: 'cancelled' }); showToast('預約已取消'); updateTodoBadge(); loadSchedule(); }
+      catch (err) { alert('取消失敗：' + err.message); }
+    }
+
+    function showTodoConfirm(bookingId, studentId, studentName, dateTime) {
+      confirmingBooking = { bookingId, studentId, studentName, dateTime };
+      const dt = new Date(dateTime);
+      const dateStr = dt.toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric' });
+      document.getElementById('todoConfirmText').textContent = `確認 ${studentName} 於 ${dateStr} 的課程已完成？`;
+      ['tcWeight','tcBodyFat','tcNotes'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('tcExercises').innerHTML = '';
+      renderExercisePicker('tcExercisePicker', 'tcExercises');
+      openModal('todoConfirmModal');
+    }
+
+    async function confirmTodo() {
+      if (saving || !confirmingBooking) return; saving = true;
+      const { bookingId, studentId } = confirmingBooking;
+      try {
+        await db.collection('bookings').doc(bookingId).update({
+          status: 'confirmed',
+          weight: parseFloat(document.getElementById('tcWeight').value) || null,
+          bodyFat: parseFloat(document.getElementById('tcBodyFat').value) || null,
+          notes: document.getElementById('tcNotes').value.trim() || null,
+          exercises: getExercisesFromContainer('tcExercises'),
+        });
+        closeModal('todoConfirmModal'); confirmingBooking = null; showToast('已確認完課'); loadExerciseHistory(); updateTodoBadge(); loadSchedule();
+      } catch (err) { alert('確認失敗：' + err.message); } finally { saving = false; }
+    }
+
+    // ===== Finance =====
+    async function loadFinance() {
+      try {
+        const purchaseSnap = await db.collection('purchases').orderBy('date', 'desc').get();
+        const purchases = [];
+        purchaseSnap.forEach(doc => purchases.push({ id: doc.id, ...doc.data() }));
+
+        const studentSnap = await db.collection('students').get();
+        const students = {};
+        studentSnap.forEach(doc => { students[doc.id] = doc.data(); });
+
+        const now = new Date();
+        const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        let totalReceived = 0, monthlyReceived = 0;
+        const studentPurchases = {};
+
+        // Only count confirmed purchases in totals
+        purchases.forEach(p => {
+          if (!p.confirmed) return;
+          totalReceived += p.totalAmount || 0;
+          if (p.date && p.date.startsWith(thisMonth)) monthlyReceived += p.totalAmount || 0;
+          if (!studentPurchases[p.studentId]) studentPurchases[p.studentId] = { totalAmount: 0, totalSessions: 0 };
+          studentPurchases[p.studentId].totalAmount += p.totalAmount || 0;
+          studentPurchases[p.studentId].totalSessions += p.sessions || 0;
+        });
+
+        // Compute used sessions per student from confirmed bookings
+        const usedByStudent = {};
+        const bookingSnap = await db.collection('bookings').get();
+        bookingSnap.forEach(doc => {
+          const b = doc.data();
+          if (b.status !== 'confirmed' || b.type === 'weight_log') return;
+          usedByStudent[b.studentId] = (usedByStudent[b.studentId] || 0) + 1;
+        });
+
+        let totalEarned = 0;
+        Object.keys(studentPurchases).forEach(sid => {
+          const sp = studentPurchases[sid];
+          const student = students[sid];
+          if (student && sp.totalSessions > 0) {
+            const avgPrice = sp.totalAmount / sp.totalSessions;
+            totalEarned += Math.min(usedByStudent[sid] || 0, sp.totalSessions) * avgPrice;
+          }
+        });
+
+        const pendingCount = purchases.filter(p => !p.confirmed).length;
+        document.getElementById('financeCards').innerHTML = `
+          <div class="finance-card"><div class="fc-label">總收款</div><div class="fc-value gold">${formatMoney(totalReceived)}</div>${pendingCount ? `<div class="fc-sub" style="color:var(--gold)">${pendingCount} 筆待確認</div>` : ''}</div>
+          <div class="finance-card"><div class="fc-label">已賺取（已完課）</div><div class="fc-value green">${formatMoney(Math.round(totalEarned))}</div></div>
+          <div class="finance-card"><div class="fc-label">待完成</div><div class="fc-value">${formatMoney(Math.round(totalReceived - totalEarned))}</div><div class="fc-sub">尚未上完的課程金額</div></div>
+          <div class="finance-card"><div class="fc-label">本月收款</div><div class="fc-value gold">${formatMoney(monthlyReceived)}</div></div>`;
+
+        const listC = document.getElementById('purchaseList');
+        if (!purchases.length) { listC.innerHTML = '<div class="empty-state">尚無購課紀錄</div>'; }
+        else {
+          listC.innerHTML = '';
+          purchases.forEach(p => {
+            const pps = p.sessions ? Math.round(p.totalAmount / p.sessions) : 0;
+            const isConfirmed = !!p.confirmed;
+            const div = document.createElement('div'); div.className = 'purchase-card';
+            div.style.opacity = isConfirmed ? '1' : '0.6';
+            div.innerHTML = `
+              <label style="display:flex;align-items:center;cursor:pointer;margin-right:1rem">
+                <input type="checkbox" ${isConfirmed ? 'checked' : ''} onchange="togglePurchaseConfirm('${p.id}','${p.studentId}',${p.sessions},this.checked)" style="width:18px;height:18px;accent-color:var(--gold);cursor:pointer">
+              </label>
+              <div class="purchase-info" style="flex:1">
+                <div class="purchase-student">${p.studentName}${isConfirmed ? '' : ' <span style="font-size:0.75rem;color:var(--gold)">(待確認)</span>'}</div>
+                <div class="purchase-detail">${p.date || '-'} · ${p.sessions} 堂 · 每堂 ${formatMoney(pps)}</div>
+              </div>
+              <div class="purchase-amount">${formatMoney(p.totalAmount)}</div>
+              ${!isConfirmed ? `<button class="btn btn-outline btn-sm" style="margin-left:0.75rem;font-size:0.75rem" onclick="deletePurchase('${p.id}')">刪除</button>` : ''}`;
+            listC.appendChild(div);
+          });
+        }
+      } catch (err) { console.error(err); }
+    }
+
+    async function deletePurchase(purchaseId) {
+      if (!confirm('確定要刪除這筆購課紀錄嗎？')) return;
+      try {
+        await db.collection('purchases').doc(purchaseId).delete();
+        await loadStudentsCache();
+        showToast('已刪除'); loadFinance();
+        if (currentStudentId) loadStudentDetail(currentStudentId);
+      } catch (err) { alert('刪除失敗：' + err.message); }
+    }
+
+    async function togglePurchaseConfirm(purchaseId, studentId, sessions, isChecked) {
+      try {
+        await db.collection('purchases').doc(purchaseId).update({ confirmed: isChecked });
+        loadFinance();
+        if (currentStudentId) loadStudentDetail(currentStudentId);
+        showToast(isChecked ? '已確認收款' : '已取消確認');
+      } catch (err) { alert('更新失敗：' + err.message); }
+    }
+
+    function showAddPurchase() {
+      populateStudentSelect('pStudent');
+      document.getElementById('pDate').value = todayStr();
+      document.getElementById('pSessions').value = '';
+      document.getElementById('pAmount').value = '';
+      openModal('purchaseModal');
+    }
+    async function savePurchase() {
+      if (saving) return; saving = true;
+      const studentId = document.getElementById('pStudent').value;
+      const date = document.getElementById('pDate').value;
+      const sessions = parseInt(document.getElementById('pSessions').value);
+      const totalAmount = parseInt(document.getElementById('pAmount').value);
+      if (!studentId || !sessions || !totalAmount) { saving = false; alert('請填寫完整資料'); return; }
+      const student = studentsCache.find(s => s.id === studentId);
+      if (!student) { saving = false; alert('找不到學生資料，請重新載入'); return; }
+      try {
+        await db.collection('purchases').add({
+          studentId, studentName: student.name,
+          date: date || todayStr(), sessions, totalAmount,
+          confirmed: false,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+        closeModal('purchaseModal'); showToast('購課紀錄已新增，請到金流確認收款'); await loadStudentsCache(); loadFinance();
+        if (currentStudentId) loadStudentDetail(currentStudentId);
+      } catch (err) { alert('儲存失敗：' + err.message); } finally { saving = false; }
+    }
+    // ===== Guided Tour =====
+    const tourSteps = [
+      {
+        target: '.tab-bar',
+        title: '主選單',
+        text: '後台分為三大區塊：「學員列表」管理所有學員、「行程表」排課和確認完課、「金流」追蹤收入。',
+        tab: 'students',
+      },
+      {
+        target: '#studentGrid',
+        title: '學員列表',
+        text: '所有學員一覽。卡片上會顯示已上堂數和剩餘堂數。點擊學員卡片進入詳細頁面。',
+        tab: 'students',
+      },
+      {
+        target: '.section-header .btn-gold',
+        title: '新增學員',
+        text: '點此新增學員，填寫姓名、性別、身高體重、聯絡方式等基本資料。',
+        tab: 'students',
+      },
+      {
+        target: '.quick-actions',
+        title: '快捷操作',
+        text: '在學員頁面中，可以快速「預約上課」、「新增購課」或「記錄體重」。預約會出現在行程表，購課需要到金流確認收款。',
+        needDetail: true,
+      },
+      {
+        target: '#exerciseRefSection, .records-header',
+        title: '訓練重量參考',
+        text: '這裡會自動彙整每個動作最近一次的重量。點選動作可以產生純文字，方便複製傳給學員。',
+        needDetail: true,
+        fallbackTarget: '.records-header',
+      },
+      {
+        target: '#classRecordsHeader',
+        title: '上課紀錄與補登',
+        text: '所有完課紀錄會出現在這裡，包含訓練項目、重量、次數和組數。可以「補登上課」來補記過去的課程，也可以「編輯」已有的紀錄。',
+        needDetail: true,
+      },
+      {
+        target: '#tabSchedule',
+        title: '行程表 — 待確認完課',
+        text: '預約時間到了之後，會自動變成「待確認完課」。點擊「確認完課」可以同時記錄體重、訓練項目和課堂筆記。',
+        tab: 'schedule',
+      },
+      {
+        target: '#calendarView',
+        title: '行程表 — 日曆',
+        text: '用 7 天或 30 天的日曆檢視近期預約。直接點擊日期格子就可以快速新增預約。',
+        tab: 'schedule',
+      },
+      {
+        target: '#tabFinance',
+        title: '金流 — 總覽',
+        text: '追蹤收入狀況：「總收款」是已確認收到的錢，「已賺取」是完課後的實際收入，「待完成」是收了錢但還沒上完的課。',
+        tab: 'finance',
+      },
+      {
+        target: '#purchaseList',
+        title: '金流 — 購課確認',
+        text: '新增購課後預設為「待確認」。勾選 checkbox 確認收款後，才會計入收入和學員堂數。未確認的可以直接刪除。',
+        tab: 'finance',
+      },
+    ];
+
+    let tourCurrentStep = 0;
+    let tourActive = false;
+
+    function startTour() {
+      tourCurrentStep = 0;
+      tourActive = true;
+      // Start from students tab
+      const studentsTab = document.querySelector('.tab-btn[data-tab="students"]');
+      switchTab('students', studentsTab);
+      setTimeout(() => showTourStep(), 300);
+    }
+
+    function endTour() {
+      tourActive = false;
+      document.getElementById('tourOverlay').classList.remove('active');
+    }
+
+    function showTourStep() {
+      if (tourCurrentStep >= tourSteps.length) { endTour(); return; }
+
+      const step = tourSteps[tourCurrentStep];
+      const overlay = document.getElementById('tourOverlay');
+      const spotlight = document.getElementById('tourSpotlight');
+      const tooltip = document.getElementById('tourTooltip');
+
+      // Switch tab if needed
+      if (step.tab) {
+        const tabBtn = document.querySelector(`.tab-btn[data-tab="${step.tab}"]`);
+        switchTab(step.tab, tabBtn);
+      }
+
+      // If step needs student detail, find Johnson (or first student with data)
+      let needsDetailLoad = false;
+      if (step.needDetail && !document.getElementById('viewDetail').classList.contains('active')) {
+        const cards = document.querySelectorAll('.student-card');
+        let targetCard = null;
+        cards.forEach(card => {
+          if (card.querySelector('h3') && card.querySelector('h3').textContent === 'Johnson') targetCard = card;
+        });
+        if (!targetCard && cards.length) targetCard = cards[0];
+        if (targetCard) { targetCard.click(); needsDetailLoad = true; }
+      }
+
+      // Wait longer if we just triggered a detail load (Firestore queries)
+      const waitTime = needsDetailLoad ? 1500 : (step.tab ? 400 : 150);
+      setTimeout(() => {
+        let targetEl = null;
+
+        // Try primary target, then fallback
+        const targets = step.target.split(', ');
+        for (const sel of targets) {
+          targetEl = document.querySelector(sel);
+          if (targetEl && targetEl.offsetParent !== null) break;
+        }
+        if (step.fallbackTarget && (!targetEl || targetEl.offsetParent === null)) {
+          targetEl = document.querySelector(step.fallbackTarget);
+        }
+
+        if (!targetEl || targetEl.offsetParent === null) {
+          tourCurrentStep++;
+          showTourStep();
+          return;
+        }
+
+        // First scroll into view, then position after scroll completes
+        targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        setTimeout(() => {
+          overlay.classList.add('active');
+          const rect = targetEl.getBoundingClientRect();
+          const pad = 20;
+
+          spotlight.style.left = (rect.left - pad) + 'px';
+          spotlight.style.top = (rect.top - pad) + 'px';
+          spotlight.style.width = (rect.width + pad * 2) + 'px';
+          spotlight.style.height = (rect.height + pad * 2) + 'px';
+
+          const tooltipWidth = 360;
+          let tooltipLeft = rect.left;
+          let tooltipTop = rect.bottom + pad + 12;
+
+          if (tooltipTop + 200 > window.innerHeight) tooltipTop = rect.top - pad - 12 - 200;
+          if (tooltipLeft + tooltipWidth > window.innerWidth - 16) tooltipLeft = window.innerWidth - tooltipWidth - 16;
+          if (tooltipLeft < 16) tooltipLeft = 16;
+          if (tooltipTop < 16) tooltipTop = 16;
+
+          tooltip.style.left = tooltipLeft + 'px';
+          tooltip.style.top = tooltipTop + 'px';
+
+          const isFirst = tourCurrentStep === 0;
+          const isLast = tourCurrentStep === tourSteps.length - 1;
+
+          tooltip.innerHTML = `
+            <div class="tour-step-count">步驟 ${tourCurrentStep + 1} / ${tourSteps.length}</div>
+            <h3>${step.title}</h3>
+            <p>${step.text}</p>
+            <div class="tour-actions">
+              <button class="tour-btn" onclick="endTour()">結束導覽</button>
+              ${!isFirst ? '<button class="tour-btn" onclick="tourCurrentStep--;showTourStep()">上一步</button>' : ''}
+              <button class="tour-btn primary" onclick="tourCurrentStep++;showTourStep()">${isLast ? '完成' : '下一步'}</button>
+            </div>`;
+        }, 500);
+      }, waitTime);
+    }
+
+    // Show tour button after login
+    auth.onAuthStateChanged(user => {
+      document.getElementById('tourTrigger').style.display = user ? 'block' : 'none';
+    });
+  </script>
+</body>
+</html>

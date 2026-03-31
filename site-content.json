@@ -1,0 +1,79 @@
+{
+  "brand": "LORY FITNESS",
+  "slogan": "專業一對一健身教練指導",
+  "heroImage": "images/hero.jpg",
+  "aboutImage": "images/hero.jpg",
+
+  "about": {
+    "name": "詹鎧維",
+    "nickname": "Lory",
+    "bio": "擁有多年健身教學經驗，專注於一對一客製化訓練課程。根據每位學員的體態、目標與生活習慣，量身打造最適合的訓練計畫。",
+    "experience": [
+      "健身教學經驗 X 年",
+      "ACE 認證私人教練（Placeholder）",
+      "運動營養師認證（Placeholder）",
+      "健美比賽 XX 名（Placeholder）"
+    ],
+    "philosophy": "訓練不只是練肌肉，更是建立自信與健康生活方式的過程。"
+  },
+
+  "services": [
+    {
+      "title": "一對一教練課",
+      "description": "針對個人目標量身打造訓練計畫，全程專業指導動作與姿勢。"
+    },
+    {
+      "title": "體態評估",
+      "description": "透過身體組成分析，了解你的體脂、肌肉量，制定科學化的訓練方向。"
+    },
+    {
+      "title": "飲食建議",
+      "description": "搭配 BMR/TDEE 計算，提供個人化的飲食營養建議。"
+    }
+  ],
+
+  "successStories": [
+    {
+      "name": "學員 A",
+      "result": "3 個月減脂 8kg",
+      "quote": "Lory 教練讓我重新愛上運動！（Placeholder）"
+    },
+    {
+      "name": "學員 B",
+      "result": "6 個月增肌 5kg",
+      "quote": "從來沒想過自己可以做到。（Placeholder）"
+    }
+  ],
+
+  "milky": {
+    "name": "Milky",
+    "description": "教練的白色柴犬夥伴 🐕",
+    "image": "images/milky.jpg",
+    "instagram": "https://www.instagram.com/milky_white_shibainu/",
+    "instagramId": "@milky_white_shibainu"
+  },
+
+  "contact": {
+    "instagram": "https://www.instagram.com/the_617/",
+    "instagramId": "@the_617",
+    "line": "The617",
+    "cta": "想開始改變？立即聯繫我，一起訓練！"
+  },
+
+  "banners": [
+    {
+      "text": "TRAIN HARD. STAY HUMBLE.",
+      "image": "images/hero.jpg",
+      "position": "after-about"
+    },
+    {
+      "text": "YOUR BODY CAN STAND ALMOST ANYTHING.\nIT'S YOUR MIND THAT YOU HAVE TO CONVINCE.",
+      "image": "images/hero.jpg",
+      "position": "after-services"
+    }
+  ],
+
+  "footer": {
+    "copyright": "© 2025 Lory Fitness. All rights reserved."
+  }
+}
