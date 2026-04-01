@@ -222,6 +222,11 @@
       <input type="number" id="age" placeholder="年齡">
       <input type="number" id="height" placeholder="身高 (cm)">
       <input type="number" id="weight" placeholder="體重 (kg)">
+      <input type="number" id="bodyFat" placeholder="體脂率 % (選填，啟用 Katch-McArdle)" step="0.1">
+    </div>
+
+    <div id="weightForMacro" style="display:none">
+      <input type="number" id="macroWeight" placeholder="體重 (kg) — 用於計算巨量營養素">
     </div>
 
     <select id="activity">
@@ -265,9 +270,12 @@
       const mode = document.getElementById('modeSelect').value;
       document.getElementById('manualFields').style.display = mode === 'manual' ? '' : 'none';
       document.getElementById('autoFields').style.display = mode === 'auto' ? '' : 'none';
+      // 手動模式時顯示體重欄位（用於巨量營養素計算）
+      document.getElementById('weightForMacro').style.display = mode === 'manual' ? '' : 'none';
     }
 
-    function calcBMR(gender, age, height, weight) {
+    // Mifflin-St Jeor (一般人群最準確)
+    function calcBMR_MifflinStJeor(gender, age, height, weight) {
       if (gender === 'male') {
         return 10 * weight + 6.25 * height - 5 * age + 5;
       } else {
@@ -275,25 +283,57 @@
       }
     }
 
-    function calculate_total_calories(tdee, goal, exp) {
-      let adjust = 0;
-      if (goal === 'gain') {
-        adjust = exp === 'newbie' ? 300 : 200;
-      } else {
-        adjust = exp === 'newbie' ? -300 : -200;
-      }
-      return tdee + adjust;
+    // Katch-McArdle (已知體脂率時更準確)
+    function calcBMR_KatchMcArdle(weight, bodyFatPercent) {
+      const leanMass = weight * (1 - bodyFatPercent / 100);
+      return 370 + 21.6 * leanMass;
     }
 
-    function calculate_macronutrients(total, goal) {
-      const ratios = goal === 'gain'
-        ? {p: 0.3, f: 0.25, c: 0.45}
-        : {p: 0.35, f: 0.25, c: 0.4};
+    function calcBMR(gender, age, height, weight, bodyFatPercent) {
+      if (bodyFatPercent > 0) {
+        return {
+          value: calcBMR_KatchMcArdle(weight, bodyFatPercent),
+          method: 'Katch-McArdle',
+          leanMass: weight * (1 - bodyFatPercent / 100)
+        };
+      }
       return {
-        protein: Math.round(total * ratios.p / 4),
-        fat: Math.round(total * ratios.f / 9),
-        carbs: Math.round(total * ratios.c / 4)
+        value: calcBMR_MifflinStJeor(gender, age, height, weight),
+        method: 'Mifflin-St Jeor',
+        leanMass: null
       };
+    }
+
+    // 熱量調整改為 TDEE 百分比制
+    function calculate_total_calories(tdee, goal, exp) {
+      let multiplier;
+      if (goal === 'gain') {
+        multiplier = exp === 'newbie' ? 1.15 : 1.10; // +15% 新手, +10% 老手
+      } else {
+        multiplier = exp === 'newbie' ? 0.80 : 0.85; // -20% 新手, -15% 老手
+      }
+      return { total: Math.round(tdee * multiplier), percent: Math.round((multiplier - 1) * 100) };
+    }
+
+    // 蛋白質用 g/kg 體重計算（ISSN position stand）
+    function calculate_macronutrients(totalCal, goal, weightKg) {
+      let proteinPerKg, fatPerKg;
+      if (goal === 'gain') {
+        proteinPerKg = 1.8;  // 1.6-2.2 g/kg，取中間值
+        fatPerKg = 1.0;      // 0.8-1.2 g/kg
+      } else {
+        proteinPerKg = 2.3;  // 2.0-2.8 g/kg，減脂需更高蛋白
+        fatPerKg = 0.9;      // 0.8-1.0 g/kg
+      }
+
+      const protein = Math.round(proteinPerKg * weightKg);
+      const fat = Math.round(fatPerKg * weightKg);
+      const proteinCal = protein * 4;
+      const fatCal = fat * 9;
+      const carbsCal = Math.max(0, totalCal - proteinCal - fatCal);
+      const carbs = Math.round(carbsCal / 4);
+
+      return { protein, fat, carbs, proteinPerKg, fatPerKg };
     }
 
     function suggest_foods() {
@@ -306,30 +346,40 @@
 
     function calc() {
       const mode = document.getElementById('modeSelect').value;
-      let bmr;
+      let bmrResult, weightKg;
+
       if (mode === 'manual') {
-        bmr = parseFloat(document.getElementById('manualBmr').value) || 0;
+        const manualBmr = parseFloat(document.getElementById('manualBmr').value) || 0;
+        weightKg = parseFloat(document.getElementById('macroWeight').value) || 0;
+        if (manualBmr <= 0 || weightKg <= 0) {
+          alert('請輸入 BMR 和體重');
+          return;
+        }
+        bmrResult = { value: manualBmr, method: '手動輸入', leanMass: null };
       } else {
         const gender = document.getElementById('gender').value;
         const age = parseFloat(document.getElementById('age').value) || 0;
         const height = parseFloat(document.getElementById('height').value) || 0;
-        const weight = parseFloat(document.getElementById('weight').value) || 0;
-        bmr = calcBMR(gender, age, height, weight);
+        weightKg = parseFloat(document.getElementById('weight').value) || 0;
+        const bodyFat = parseFloat(document.getElementById('bodyFat').value) || 0;
+        if (age <= 0 || height <= 0 || weightKg <= 0) {
+          alert('請填寫年齡、身高和體重');
+          return;
+        }
+        bmrResult = calcBMR(gender, age, height, weightKg, bodyFat);
       }
 
       const factor = parseFloat(document.getElementById('activity').value);
       const goal = document.getElementById('goal').value;
       const exp = document.getElementById('experience').value;
 
-      const tdee = bmr * factor;
-      const total = calculate_total_calories(tdee, goal, exp);
-      const macros = calculate_macronutrients(total, goal);
+      const tdee = bmrResult.value * factor;
+      const { total, percent } = calculate_total_calories(tdee, goal, exp);
+      const macros = calculate_macronutrients(total, goal, weightKg);
       const foods = suggest_foods();
 
-      const pMin = Math.round(macros.protein * 0.9);
-      const pMax = Math.round(macros.protein * 1.1);
-      const fMin = Math.round(macros.fat * 0.9);
-      const fMax = Math.round(macros.fat * 1.1);
+      const pRange = goal === 'gain' ? '1.6–2.2' : '2.0–2.8';
+      const fRange = goal === 'gain' ? '0.8–1.2' : '0.8–1.0';
 
       const proteinContent = {
         '雞胸肉': 30,
@@ -350,40 +400,51 @@
 
       // 顯示結果容器
       document.getElementById('resultContainer').style.display = 'block';
-      
+
+      // 組裝方法說明
+      let methodNote = `計算方式：${bmrResult.method}`;
+      if (bmrResult.leanMass) {
+        methodNote += `（瘦體重 ${bmrResult.leanMass.toFixed(1)} kg）`;
+      }
+
+      const sign = percent >= 0 ? '+' : '';
+
       // 填入基本資訊
       const basicInfoDiv = document.getElementById('basicInfo');
       basicInfoDiv.innerHTML = `
-        <p>您的基礎代謝量(BMR)：<strong>${bmr.toFixed(1)} 卡路里</strong></p>
-        <p>您每日所需攝取的總熱量(TDEE)：<strong>${Math.round(tdee)} 卡路里</strong></p>
-        <p>建議每日攝取的總熱量：<strong>${Math.round(total)} 卡路里</strong></p>
-        <p>建議每日攝取的蛋白質：<strong>${pMin} - ${pMax} 克</strong></p>
-        <p>建議每日攝取的脂肪：<strong>${fMin} - ${fMax} 克</strong></p>
-        <p>建議每日攝取的碳水化合物：<strong>${Math.round(macros.carbs)} 克</strong></p>
+        <p>BMR：<strong>${bmrResult.value.toFixed(1)} kcal</strong><br><small>${methodNote}</small></p>
+        <p>TDEE：<strong>${Math.round(tdee)} kcal</strong></p>
+        <p>建議攝取：<strong>${total} kcal</strong><br><small>TDEE ${sign}${percent}%（${exp === 'newbie' ? '新手' : '老手'}${goal === 'gain' ? '增肌' : '減脂'}）</small></p>
+        <p>蛋白質：<strong>${macros.protein} g</strong><br><small>${macros.proteinPerKg} g/kg（建議範圍 ${pRange} g/kg）</small></p>
+        <p>脂肪：<strong>${macros.fat} g</strong><br><small>${macros.fatPerKg} g/kg（建議範圍 ${fRange} g/kg）</small></p>
+        <p>碳水化合物：<strong>${macros.carbs} g</strong><br><small>由剩餘熱量計算</small></p>
       `;
 
       // 填入食物建議
       const foodSuggestionsDiv = document.getElementById('foodSuggestions');
       foodSuggestionsDiv.innerHTML = `
         <h2>建議食物</h2>
-        <h3>蛋白質(每份100 g)</h3>
+        <h3>蛋白質（每份 100g）</h3>
         <ul>
-          ${foods.protein.map(f => 
-            `<li>${f}: ${Math.round(macros.protein / proteinContent[f])} 份 (${f}每100g 含有約${proteinContent[f]}g 蛋白質)</li>`
+          ${foods.protein.map(f =>
+            `<li>${f}: ${Math.round(macros.protein / proteinContent[f])} 份（每 100g 含 ${proteinContent[f]}g 蛋白質）</li>`
           ).join('')}
         </ul>
-        <h3>脂肪(每份10 g)</h3>
+        <h3>脂肪（每份 10g）</h3>
         <ul>
-          ${foods.fat.map(f => 
-            `<li>${f}: ${Math.round(macros.fat / fatContent[f])} 份 (${f}每10g 含有約${fatContent[f]}g 脂肪)</li>`
+          ${foods.fat.map(f =>
+            `<li>${f}: ${Math.round(macros.fat / fatContent[f])} 份（每 10g 含 ${fatContent[f]}g 脂肪）</li>`
           ).join('')}
         </ul>
-        <h3>碳水化合物(每份100 g)</h3>
+        <h3>碳水化合物（每份 100g）</h3>
         <ul>
-          ${foods.carbs.map(f => 
-            `<li>${f}: ${Math.round(macros.carbs / carbContent[f])} 份 (${f}每100g 含有約${carbContent[f]}g 碳水化合物)</li>`
+          ${foods.carbs.map(f =>
+            `<li>${f}: ${Math.round(macros.carbs / carbContent[f])} 份（每 100g 含 ${carbContent[f]}g 碳水）</li>`
           ).join('')}
         </ul>
+        <p style="margin-top:16px; font-size:0.85em; color:#6c757d;">
+          參考文獻：Mifflin-St Jeor (1990)、Katch-McArdle、ISSN Position Stand on Diets and Body Composition (2017)、Helms et al. (2014)
+        </p>
       `;
     }
   </script>
