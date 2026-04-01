@@ -10,7 +10,7 @@
     padding: 20px;
     background-color: #f5f5f5;
   }
-  
+
   .container {
     max-width: 800px;
     margin: 0 auto;
@@ -19,7 +19,7 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     overflow: hidden;
   }
-  
+
   .result-tag {
     background: linear-gradient(135deg, #2d6a4f, #40916c);
     color: white;
@@ -30,12 +30,12 @@
     text-align: center;
     letter-spacing: 1px;
   }
-  
+
   .result-block {
     padding: 32px;
     background: white;
   }
-  
+
   .nutrition-result {
     font-size: 0.95em;
     color: #333;
@@ -46,7 +46,7 @@
     border-left: 4px solid #2d6a4f;
     line-height: 1.7;
   }
-  
+
   .nutrition-result h2 {
     font-size: 1.2em;
     margin: 24px 0 16px 0;
@@ -55,35 +55,35 @@
     border-bottom: 2px solid #e9ecef;
     padding-bottom: 8px;
   }
-  
+
   .nutrition-result h2:first-of-type {
     margin-top: 16px;
   }
-  
+
   .nutrition-result h3 {
     font-size: 1.05em;
     margin: 20px 0 12px 0;
     color: #495057;
     font-weight: 500;
   }
-  
+
   .nutrition-result ul {
     margin: 0 0 0 1.2em;
     padding: 0;
   }
-  
+
   .nutrition-result li {
     margin-bottom: 6px;
     color: #495057;
   }
-  
+
   .basic-info {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 16px;
     margin-bottom: 24px;
   }
-  
+
   .basic-info p {
     background: white;
     padding: 16px;
@@ -91,6 +91,17 @@
     border-radius: 6px;
     border: 1px solid #dee2e6;
     font-weight: 500;
+  }
+
+  .basic-info small {
+    font-weight: 400;
+    color: #6c757d;
+  }
+
+  .references {
+    margin-top: 16px;
+    font-size: 0.85em;
+    color: #6c757d;
   }
   </style>
 </head>
@@ -100,32 +111,33 @@
     <div class="result-block">
       <div class="nutrition-result">
         <div class="basic-info">
-          <p>您的基礎代謝量(BMR)：<strong>{{ bmr }} 卡路里</strong></p>
-          <p>您每日所需攝取的總熱量(TDEE)：<strong>{{ tdee }} 卡路里</strong></p>
-          <p>建議每日攝取的總熱量：<strong>{{ total_calories }} 卡路里</strong></p>
-          <p>建議每日攝取的蛋白質：<strong>{{ protein_min }} - {{ protein_max }} 克</strong></p>
-          <p>建議每日攝取的脂肪：<strong>{{ fat_min }} - {{ fat_max }} 克</strong></p>
-          <p>建議每日攝取的碳水化合物：<strong>{{ carbs }} 克</strong></p>
+          <p>BMR：<strong>{{ bmr }} kcal</strong><br><small>計算方式：{{ bmr_method }}{% if lean_mass %}（瘦體重 {{ lean_mass }} kg）{% endif %}</small></p>
+          <p>TDEE：<strong>{{ tdee }} kcal</strong></p>
+          <p>建議攝取：<strong>{{ total_calories }} kcal</strong><br><small>TDEE {{ '+' if calorie_percent >= 0 }}{{ calorie_percent }}%（{{ experience }}{{ goal }}）</small></p>
+          <p>蛋白質：<strong>{{ protein }} g</strong><br><small>{{ protein_per_kg }} g/kg（建議範圍 {{ protein_range }} g/kg）</small></p>
+          <p>脂肪：<strong>{{ fat }} g</strong><br><small>{{ fat_per_kg }} g/kg（建議範圍 {{ fat_range }} g/kg）</small></p>
+          <p>碳水化合物：<strong>{{ carbs }} g</strong><br><small>由剩餘熱量計算</small></p>
         </div>
     <h2>建議食物</h2>
-    <h3>蛋白質(每份100 g)</h3>
+    <h3>蛋白質（每份 100g）</h3>
     <ul>
       {% for food, servings in protein_foods.items() %}
-        <li>{{ food }}: {{ servings }} 份 ({{ food }}每100g 含有約{{ protein_content[food] }}g 蛋白質)</li>
+        <li>{{ food }}: {{ servings }} 份（每 100g 含 {{ protein_content[food] }}g 蛋白質）</li>
       {% endfor %}
     </ul>
-    <h3>脂肪(每份10 g)</h3>
+    <h3>脂肪（每份 10g）</h3>
     <ul>
       {% for food, servings in fat_foods.items() %}
-        <li>{{ food }}: {{ servings }} 份 ({{ food }}每10g 含有約{{ fat_content[food] }}g 脂肪)</li>
+        <li>{{ food }}: {{ servings }} 份（每 10g 含 {{ fat_content[food] }}g 脂肪）</li>
       {% endfor %}
     </ul>
-    <h3>碳水化合物(每份100 g)</h3>
+    <h3>碳水化合物（每份 100g）</h3>
     <ul>
       {% for food, servings in carb_foods.items() %}
-        <li>{{ food }}: {{ servings }} 份 ({{ food }}每100g 含有約{{ carb_content[food] }}g 碳水化合物)</li>
+        <li>{{ food }}: {{ servings }} 份（每 100g 含 {{ carb_content[food] }}g 碳水）</li>
       {% endfor %}
-        </ul>
+    </ul>
+    <p class="references">參考文獻：Mifflin-St Jeor (1990)、Katch-McArdle、ISSN Position Stand on Diets and Body Composition (2017)、Helms et al. (2014)</p>
       </div>
     </div>
   </div>
