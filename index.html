@@ -262,8 +262,22 @@
       overflow: hidden; text-align: center;
     }
     .banner-bg {
-      position: absolute; inset: 0; background-size: cover; background-position: center;
+      position: absolute; inset: 0; display: flex; overflow: hidden;
+    }
+    .banner-bg-slice {
+      flex: 1; position: relative; background-size: cover; background-position: center;
       background-attachment: fixed; filter: brightness(0.2) saturate(0.6);
+    }
+    .banner-bg-slice:nth-child(1) {
+      clip-path: polygon(0 0, calc(100% + 3vw) 0, calc(100% - 3vw) 100%, 0 100%);
+    }
+    .banner-bg-slice:nth-child(2) {
+      margin-left: -3vw;
+      clip-path: polygon(3vw 0, calc(100% + 3vw) 0, calc(100% - 3vw) 100%, 0 100%);
+    }
+    .banner-bg-slice:nth-child(3) {
+      margin-left: -3vw;
+      clip-path: polygon(3vw 0, 100% 0, 100% 100%, 0 100%);
     }
     .banner-text {
       position: relative; z-index: 1; font-family: 'Oswald', sans-serif;
@@ -315,7 +329,7 @@
       .section { padding: 5rem 1.5rem; }
       .stats-strip { grid-template-columns: repeat(2, 1fr); }
       .stat-item:nth-child(2) { border-right: none; }
-      .banner-bg { background-attachment: scroll; }
+      .banner-bg-slice { background-attachment: scroll; }
     }
   </style>
 </head>
@@ -379,7 +393,11 @@
 
   <!-- Banner Break 1 -->
   <div class="banner-break" id="banner1">
-    <div class="banner-bg" style="background-image:url(images/hero.jpg)"></div>
+    <div class="banner-bg">
+      <div class="banner-bg-slice" style="background-image:url(images/hero_2.jpg); background-position: 10% 15%;"></div>
+      <div class="banner-bg-slice" style="background-image:url(images/hero.jpg); background-position: center 15%;"></div>
+      <div class="banner-bg-slice" style="background-image:url(images/hero_3.jpg); background-position: right 5%;"></div>
+    </div>
     <div class="banner-text reveal">TRAIN HARD.<br><span>STAY HUMBLE.</span></div>
   </div>
 
@@ -446,7 +464,11 @@
 
   <!-- Banner Break 2 -->
   <div class="banner-break" id="banner2">
-    <div class="banner-bg" style="background-image:url(images/hero.jpg)"></div>
+    <div class="banner-bg">
+      <div class="banner-bg-slice" style="background-image:url(images/hero_2.jpg); background-position: 10% 15%;"></div>
+      <div class="banner-bg-slice" style="background-image:url(images/hero.jpg); background-position: center 15%;"></div>
+      <div class="banner-bg-slice" style="background-image:url(images/hero_3.jpg); background-position: right 5%;"></div>
+    </div>
     <div class="banner-text reveal">每一次的堅持<br>都是對<span>未來自己</span>的投資</div>
   </div>
 
