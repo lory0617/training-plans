@@ -141,12 +141,35 @@
 
     /* About */
     .about-layout { display: grid; grid-template-columns: auto 1fr 1fr; gap: 3rem; align-items: start; }
+    .about-carousel {
+      position: relative; width: 220px; height: 300px;
+    }
     .about-photo {
       width: 220px; height: 300px; border-radius: 20px; object-fit: cover;
-      border: 2px solid var(--border); transition: all 0.5s;
-      filter: grayscale(0.3);
+      border: 2px solid var(--border); transition: opacity 0.5s, filter 0.5s;
+      filter: grayscale(0.3); position: absolute; top: 0; left: 0;
+      opacity: 0;
     }
-    .about-photo:hover { filter: grayscale(0); border-color: var(--gold); transform: scale(1.03); }
+    .about-photo.active { opacity: 1; }
+    .about-photo:hover { filter: grayscale(0); border-color: var(--gold); }
+    .carousel-btn {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      background: rgba(0,0,0,0.6); border: 1px solid var(--border);
+      color: var(--text); width: 32px; height: 32px; border-radius: 50%;
+      cursor: pointer; font-size: 0.9rem; display: flex; align-items: center;
+      justify-content: center; z-index: 2; transition: all 0.3s;
+    }
+    .carousel-btn:hover { background: var(--gold); color: var(--bg); border-color: var(--gold); }
+    .carousel-btn.prev { left: -12px; }
+    .carousel-btn.next { right: -12px; }
+    .carousel-dots {
+      display: flex; justify-content: center; gap: 6px; margin-top: 0.8rem;
+    }
+    .carousel-dot {
+      width: 6px; height: 6px; border-radius: 50%; background: var(--border);
+      transition: background 0.3s; cursor: pointer;
+    }
+    .carousel-dot.active { background: var(--gold); }
     .about-name { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.3rem; transition: color 0.3s; }
     .about-name:hover { color: var(--gold); }
     .about-nick { color: var(--gold); font-size: 0.9rem; letter-spacing: 2px; margin-bottom: 2rem; font-weight: 300; }
@@ -324,6 +347,7 @@
       nav.scrolled { padding: 0.8rem 1.5rem; }
       .section-tab { padding: 0.6rem 0.8rem; font-size: 0.6rem; letter-spacing: 1.5px; }
       .about-layout { grid-template-columns: 1fr; gap: 2rem; }
+      .about-carousel { width: 100%; height: 250px; }
       .about-photo { width: 100%; height: 250px; }
       .services-grid { grid-template-columns: 1fr; }
       .section { padding: 5rem 1.5rem; }
@@ -377,7 +401,20 @@
     <div class="section-line reveal reveal-delay-1"></div>
     <div class="about-layout">
       <div class="reveal">
-        <img id="aboutPhoto" class="about-photo" alt="教練照片">
+        <div class="about-carousel" id="aboutCarousel">
+          <img class="about-photo active" src="images/hero_5.JPG" alt="教練照片">
+          <img class="about-photo" src="images/hero.jpg" alt="教練照片">
+          <img class="about-photo" src="images/hero_3.jpg" alt="教練照片">
+          <img class="about-photo" src="images/hero_6.JPG" alt="教練照片">
+          <button class="carousel-btn prev" onclick="carouselNav(-1)">&#8249;</button>
+          <button class="carousel-btn next" onclick="carouselNav(1)">&#8250;</button>
+        </div>
+        <div class="carousel-dots" id="carouselDots">
+          <span class="carousel-dot active" onclick="carouselGo(0)"></span>
+          <span class="carousel-dot" onclick="carouselGo(1)"></span>
+          <span class="carousel-dot" onclick="carouselGo(2)"></span>
+          <span class="carousel-dot" onclick="carouselGo(3)"></span>
+        </div>
       </div>
       <div>
         <div class="about-name reveal" id="aboutName"></div>
@@ -535,7 +572,7 @@
           heroSocials.appendChild(a);
         }
 
-        if (c.aboutImage) document.getElementById('aboutPhoto').src = c.aboutImage;
+        // About carousel images are set directly in HTML
         document.getElementById('aboutName').textContent = c.about.name;
         document.getElementById('aboutNick').textContent = c.about.nickname;
         document.getElementById('aboutBio').textContent = c.about.bio;
@@ -736,6 +773,19 @@
       resultEl.style.display = 'block';
       resultEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+
+    // === About Carousel ===
+    let carouselIdx = 0;
+    const carouselPhotos = document.querySelectorAll('#aboutCarousel .about-photo');
+    const carouselDots = document.querySelectorAll('#carouselDots .carousel-dot');
+    function carouselGo(idx) {
+      carouselPhotos[carouselIdx].classList.remove('active');
+      carouselDots[carouselIdx].classList.remove('active');
+      carouselIdx = (idx + carouselPhotos.length) % carouselPhotos.length;
+      carouselPhotos[carouselIdx].classList.add('active');
+      carouselDots[carouselIdx].classList.add('active');
+    }
+    function carouselNav(dir) { carouselGo(carouselIdx + dir); }
 
     loadContent();
   </script>
