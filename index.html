@@ -488,11 +488,7 @@
         document.getElementById('navBrand').textContent = c.brand;
         document.getElementById('heroBrand').textContent = c.brand;
         document.getElementById('heroSlogan').textContent = c.slogan;
-        if (c.heroImage) {
-          document.querySelectorAll('.hero-bg-slice').forEach(slice => {
-            slice.style.backgroundImage = `url(${c.heroImage})`;
-          });
-        }
+        // Hero images are set directly in HTML for each slice
 
         // Hero social icons
         const heroSocials = document.getElementById('heroSocials');
