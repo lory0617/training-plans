@@ -399,10 +399,21 @@
           </select>
         </div>
         <div class="bmr-field">
+          <label>體脂率 %（選填）</label>
+          <input type="number" id="bmrBodyFat" placeholder="如 15" step="0.1">
+        </div>
+        <div class="bmr-field">
           <label>目標</label>
           <select id="bmrGoal">
             <option value="gain">增肌</option>
             <option value="loss">減脂</option>
+          </select>
+        </div>
+        <div class="bmr-field">
+          <label>經驗</label>
+          <select id="bmrExperience">
+            <option value="newbie">新手</option>
+            <option value="advanced">老手</option>
           </select>
         </div>
       </div>
@@ -613,29 +624,52 @@
       const weight = parseFloat(document.getElementById('bmrWeight').value);
       const activity = parseFloat(document.getElementById('bmrActivity').value);
       const goal = document.getElementById('bmrGoal').value;
+      const exp = document.getElementById('bmrExperience').value;
+      const bodyFat = parseFloat(document.getElementById('bmrBodyFat').value) || 0;
 
       if (!age || !height || !weight) { pageToast('請填寫完整資料'); return; }
 
-      // Mifflin-St Jeor
-      let bmr = 10 * weight + 6.25 * height - 5 * age;
-      bmr += gender === 'male' ? 5 : -161;
+      // BMR: Katch-McArdle (if body fat provided) or Mifflin-St Jeor
+      let bmr, bmrMethod;
+      if (bodyFat > 0) {
+        const leanMass = weight * (1 - bodyFat / 100);
+        bmr = 370 + 21.6 * leanMass;
+        bmrMethod = `Katch-McArdle（瘦體重 ${leanMass.toFixed(1)} kg）`;
+      } else {
+        bmr = 10 * weight + 6.25 * height - 5 * age + (gender === 'male' ? 5 : -161);
+        bmrMethod = 'Mifflin-St Jeor';
+      }
 
       const tdee = Math.round(bmr * activity);
-      const targetCal = Math.round(goal === 'gain' ? tdee + 300 : tdee - 300);
 
-      // Macros
-      const ratios = goal === 'gain' ? { p: 0.3, f: 0.25, c: 0.45 } : { p: 0.35, f: 0.25, c: 0.4 };
-      const protein = Math.round(targetCal * ratios.p / 4);
-      const fat = Math.round(targetCal * ratios.f / 9);
-      const carbs = Math.round(targetCal * ratios.c / 4);
+      // TDEE percentage-based adjustment
+      let multiplier;
+      if (goal === 'gain') {
+        multiplier = exp === 'newbie' ? 1.15 : 1.10;
+      } else {
+        multiplier = exp === 'newbie' ? 0.80 : 0.85;
+      }
+      const targetCal = Math.round(tdee * multiplier);
+      const pct = Math.round((multiplier - 1) * 100);
+      const sign = pct >= 0 ? '+' : '';
+
+      // Macros: g/kg body weight (ISSN position stand)
+      const proteinPerKg = goal === 'gain' ? 1.8 : 2.3;
+      const fatPerKg = goal === 'gain' ? 1.0 : 0.9;
+      const protein = Math.round(proteinPerKg * weight);
+      const fat = Math.round(fatPerKg * weight);
+      const carbs = Math.round(Math.max(0, targetCal - protein * 4 - fat * 9) / 4);
+
+      const pRange = goal === 'gain' ? '1.6–2.2' : '2.0–2.8';
+      const fRange = goal === 'gain' ? '0.8–1.2' : '0.8–1.0';
 
       const cards = document.getElementById('bmrCards');
       cards.innerHTML = `
-        <div class="bmr-result-card"><div class="bmr-val">${Math.round(bmr)}</div><div class="bmr-label">BMR (基礎代謝)</div></div>
+        <div class="bmr-result-card"><div class="bmr-val">${Math.round(bmr)}</div><div class="bmr-label">BMR (${bmrMethod})</div></div>
         <div class="bmr-result-card"><div class="bmr-val">${tdee}</div><div class="bmr-label">TDEE (每日消耗)</div></div>
-        <div class="bmr-result-card"><div class="bmr-val">${targetCal}</div><div class="bmr-label">建議攝取 (kcal)</div></div>
-        <div class="bmr-result-card"><div class="bmr-val">${protein}g</div><div class="bmr-label">蛋白質</div></div>
-        <div class="bmr-result-card"><div class="bmr-val">${fat}g</div><div class="bmr-label">脂肪</div></div>
+        <div class="bmr-result-card"><div class="bmr-val">${targetCal}</div><div class="bmr-label">建議攝取 (TDEE ${sign}${pct}%)</div></div>
+        <div class="bmr-result-card"><div class="bmr-val">${protein}g</div><div class="bmr-label">蛋白質 (${proteinPerKg} g/kg)</div></div>
+        <div class="bmr-result-card"><div class="bmr-val">${fat}g</div><div class="bmr-label">脂肪 (${fatPerKg} g/kg)</div></div>
         <div class="bmr-result-card"><div class="bmr-val">${carbs}g</div><div class="bmr-label">碳水化合物</div></div>`;
 
       // Dynamic CTA with projection
