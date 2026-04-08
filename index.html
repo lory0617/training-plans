@@ -354,30 +354,7 @@
       .stats-strip { grid-template-columns: repeat(2, 1fr); }
       .stat-item:nth-child(2) { border-right: none; }
       .banner-bg-slice { background-attachment: scroll; }
-      .hero-bg, .banner-bg { flex-direction: column; }
-      .hero-bg-slice, .banner-bg-slice { margin-left: 0; }
-      .hero-bg-slice:nth-child(1) {
-        clip-path: polygon(0 0, 100% 0, 100% calc(100% + 3vh), 0 calc(100% - 3vh));
-      }
-      .hero-bg-slice:nth-child(2) {
-        margin-top: -3vh;
-        clip-path: polygon(0 3vh, 100% 0, 100% calc(100% + 3vh), 0 calc(100% - 3vh));
-      }
-      .hero-bg-slice:nth-child(3) {
-        margin-top: -3vh;
-        clip-path: polygon(0 3vh, 100% 0, 100% 100%, 0 100%);
-      }
-      .banner-bg-slice:nth-child(1) {
-        clip-path: polygon(0 0, 100% 0, 100% calc(100% + 3vh), 0 calc(100% - 3vh));
-      }
-      .banner-bg-slice:nth-child(2) {
-        margin-top: -3vh;
-        clip-path: polygon(0 3vh, 100% 0, 100% calc(100% + 3vh), 0 calc(100% - 3vh));
-      }
-      .banner-bg-slice:nth-child(3) {
-        margin-top: -3vh;
-        clip-path: polygon(0 3vh, 100% 0, 100% 100%, 0 100%);
-      }
+      .hero-bg-slice, .banner-bg-slice { background-size: 200%; background-position: center 20%; }
     }
   </style>
 </head>
