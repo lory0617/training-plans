@@ -188,7 +188,7 @@
       background: linear-gradient(90deg, var(--gold-dim) 0%, transparent 100%);
       transition: all 0.4s; border-radius: 0 12px 12px 0; cursor: default;
     }
-    .about-exp li::before { content: '🏋️ '; }
+    .about-exp li::before { content: '▷ '; }
     .about-exp li:hover { color: var(--text); padding-left: 2rem; background: linear-gradient(90deg, rgba(245,166,35,0.25) 0%, transparent 100%); }
 
     /* Services */
@@ -390,8 +390,8 @@
     <a href="#about" class="section-tab">ABOUT</a>
     <a href="#services" class="section-tab">SERVICES</a>
     <a href="#stories" class="section-tab">STORIES</a>
-    <a href="#milkySection" class="section-tab">MILKY</a>
     <a href="#contact" class="section-tab">CONTACT</a>
+    <a href="#milkySection" class="section-tab">MILKY</a>
   </nav>
 
   <!-- Stats Strip -->
@@ -521,18 +521,18 @@
     <div class="stories-grid" id="storiesGrid"></div>
   </section>
 
-  <div class="milky-wrap" id="milkySection">
-    <div class="milky-avatar" id="milkyAvatar">🐕</div>
-    <div class="milky-name reveal" id="milkyName"></div>
-    <div class="milky-desc reveal reveal-delay-1" id="milkyDesc"></div>
-  </div>
-
   <section class="contact-wrap" id="contact">
     <div class="section-label reveal">CONTACT</div>
     <div class="section-line reveal reveal-delay-1" style="margin:0 auto 3rem"></div>
     <p class="contact-cta reveal reveal-delay-2" id="contactCta"></p>
     <div class="contact-links reveal reveal-delay-3" id="contactLinks"></div>
   </section>
+
+  <div class="milky-wrap" id="milkySection">
+    <div class="milky-avatar" id="milkyAvatar">🐕</div>
+    <div class="milky-name reveal" id="milkyName"></div>
+    <div class="milky-desc reveal reveal-delay-1" id="milkyDesc"></div>
+  </div>
 
   <footer id="footer"></footer>
   <div id="pageToast" class="hero-toast"></div>
